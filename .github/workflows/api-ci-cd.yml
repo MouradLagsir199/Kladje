@@ -27,6 +27,29 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: receptenapp
+          POSTGRES_PASSWORD: receptenapp
+          POSTGRES_DB: receptenapp_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Tests hit a real, ephemeral Postgres — never a paid API, so this is
+      # fine in CI. Clerk isn't wired to a real instance yet (task 0.9's
+      # credential ask); these are just enough for Settings to validate and
+      # for the readyz test to see a JWKS fetch fail cleanly.
+      DATABASE_URL: postgresql+asyncpg://receptenapp:receptenapp@localhost:5432/receptenapp_test
+      CLERK_SECRET_KEY: sk_test_ci_placeholder
+      CLERK_JWKS_URL: https://example.invalid/.well-known/jwks.json
+      CLERK_WEBHOOK_SECRET: whsec_ci_placeholder
     steps:
       - uses: actions/checkout@v4
 
@@ -38,6 +61,7 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src/receptenapp
+      - run: uv run alembic upgrade head
       - run: uv run pytest -q
 
       - name: Build image (no push on PRs)

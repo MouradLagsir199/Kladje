@@ -22,6 +22,13 @@ param postgresAdminPassword string
 @description('Object id of the human operator, granted Key Vault Secrets Officer so they can paste in credentials as manual-setup steps complete.')
 param deployerObjectId string
 
+@description('Real values land here once Clerk is set up (docs/12-manual-setup.md step 3) — until then, placeholders keep the app booting instead of crash-looping on missing required config.')
+@secure()
+param clerkSecretKey string = 'sk_test_placeholder'
+param clerkJwksUrl string = 'https://placeholder.clerk.accounts.dev/.well-known/jwks.json'
+@secure()
+param clerkWebhookSecret string = 'whsec_placeholder'
+
 var appServicePlanName = 'receptenapp-plan-${environmentName}'
 var appServiceName = 'receptenapp-api-${environmentName}'
 var acrName = 'acrreceptenapp${environmentName}'
@@ -77,6 +84,22 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
         { name: 'WEBSITES_PORT', value: '8000' }
         { name: 'WEBSITES_CONTAINER_START_TIME_LIMIT', value: '600' }
         { name: 'ENVIRONMENT', value: environmentName }
+        {
+          name: 'DATABASE_URL'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=database-url)'
+        }
+        {
+          name: 'CLERK_SECRET_KEY'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=clerk-secret-key)'
+        }
+        {
+          name: 'CLERK_JWKS_URL'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=clerk-jwks-url)'
+        }
+        {
+          name: 'CLERK_WEBHOOK_SECRET'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=clerk-webhook-secret)'
+        }
       ]
     }
   }
@@ -176,6 +199,36 @@ resource databaseUrlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   properties: {
     value: 'postgresql+asyncpg://${postgresAdminLogin}:${postgresAdminPassword}@${postgres.properties.fullyQualifiedDomainName}:5432/${postgresDatabaseName}?ssl=require'
   }
+  dependsOn: [
+    kvSecretsOfficerAssignment
+  ]
+}
+
+// Placeholder until Clerk is set up (docs/12-manual-setup.md step 3). Update
+// with `az keyvault secret set` afterwards — no redeploy needed, App Service
+// reads the Key Vault reference by name, not by value.
+resource clerkSecretKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'clerk-secret-key'
+  properties: { value: clerkSecretKey }
+  dependsOn: [
+    kvSecretsOfficerAssignment
+  ]
+}
+
+resource clerkJwksUrlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'clerk-jwks-url'
+  properties: { value: clerkJwksUrl }
+  dependsOn: [
+    kvSecretsOfficerAssignment
+  ]
+}
+
+resource clerkWebhookSecretSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'clerk-webhook-secret'
+  properties: { value: clerkWebhookSecret }
   dependsOn: [
     kvSecretsOfficerAssignment
   ]

@@ -1,3 +1,23 @@
 secrets/
 __pycache__/
 *.pyc
+*.p8
+
+# env
+.env
+.env.*
+!.env.example
+
+# python
+.venv/
+*.egg-info/
+
+# node / expo
+node_modules/
+.expo/
+dist/
+ios/
+android/
+
+# os
+.DS_Store

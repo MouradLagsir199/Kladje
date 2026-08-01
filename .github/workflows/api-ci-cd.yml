@@ -1,0 +1,82 @@
+name: API CI/CD
+
+on:
+  pull_request:
+    paths:
+      - "api/**"
+      - ".github/workflows/api-ci-cd.yml"
+  push:
+    branches: [main]
+    paths:
+      - "api/**"
+      - ".github/workflows/api-ci-cd.yml"
+
+defaults:
+  run:
+    working-directory: api
+
+env:
+  ACR_NAME: acrreceptenappdev
+  IMAGE_NAME: receptenapp-api
+  WEBAPP_NAME: receptenapp-api-dev
+  RESOURCE_GROUP: kladje-dev
+
+jobs:
+  lint-test-build:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src/receptenapp
+      - run: uv run pytest -q
+
+      - name: Build image (no push on PRs)
+        run: docker build -t "${IMAGE_NAME}:ci" .
+
+  deploy:
+    name: Push to ACR and deploy
+    needs: lint-test-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        run: az acr login --name "${{ env.ACR_NAME }}"
+
+      - name: Build and push
+        run: |
+          IMAGE="${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}"
+          docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" .
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
+
+      # dev runs on a Basic (B1) plan, which does not support deployment
+      # slots at all — this deploys directly. Slot-swap is for kladje-prod
+      # once it's on a Standard/Premium plan (see 01-architecture.md).
+      - name: Deploy to App Service
+        run: |
+          az webapp config container set \
+            --name "${{ env.WEBAPP_NAME }}" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --container-image-name "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          az webapp restart --name "${{ env.WEBAPP_NAME }}" --resource-group "${{ env.RESOURCE_GROUP }}"

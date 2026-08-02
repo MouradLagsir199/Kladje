@@ -43,7 +43,7 @@ Runs before anything else because it's the cache key, and a bad cache key costs 
 Rules:
 
 - Strip all tracking parameters (`utm_*`, `fbclid`, `igsh`, `_t`, `_r`, `si`, `feature`)
-- Resolve shorteners by following redirects: `vm.tiktok.com`, `youtu.be`, `pin.it`, `l.instagram.com`
+- Resolve shorteners by following redirects: `vm.tiktok.com`, `vt.tiktok.com`, `pin.it`
 - Canonicalise host: lowercase, drop `www.`, drop `m.`
 - Platform-specific canonical forms:
   - TikTok → `tiktok.com/@{author}/video/{id}`
@@ -52,6 +52,23 @@ Rules:
   - Pinterest → resolve to the **destination blog URL** where one exists; a Pin is usually a pointer
     to a real recipe page, and that page is a far better source than the Pin
 - Strip trailing slashes and fragments
+
+Implementation notes (task 1.1, `services/url_norm.py`):
+
+- `youtu.be` and `l.instagram.com` are **not** resolved over the network. Both are decodable
+  offline — `youtu.be/{id}` is just `watch?v={id}`, and `l.instagram.com` carries the destination in
+  its `u` parameter — so spending a request on them would be waste. Only `vm.tiktok.com`,
+  `vt.tiktok.com` and `pin.it` genuinely need a redirect. `vt.tiktok.com` was missing from the list
+  above and is common in the wild
+- The scheme is forced to `https` and remaining query parameters are sorted. Both exist purely to
+  stop one page producing two cache keys
+- Instagram `/reels/` and `/tv/` collapse to `/reel/`, but **`/p/` is preserved**: Instagram serves
+  photo posts there too, and rewriting those to `/reel/` would misdescribe the source
+- **Not yet done:** resolving a Pin to its destination blog URL. That needs the Pin's HTML, not a
+  redirect, so it belongs with the Pinterest extractor rather than in a pure URL transform.
+  `pin.it/{code}` currently normalises to `pinterest.com/pin/{id}`
+- A redirect resolver that fails is not fatal — the unresolved form is still a stable cache key,
+  and failing an import because a shortener was slow is the worse trade
 
 Store both `source_url` (what the user gave you, for the "bekijk origineel" link) and
 `source_url_norm` (the cache key).

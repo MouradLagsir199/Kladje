@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 
-from receptenapp.api import health, me
+from receptenapp.api import health, me, recipes
 from receptenapp.core.errors import register_exception_handlers
 
-app = FastAPI(title="Receptenapp API")
+app = FastAPI(title="Kladje API")
 
 register_exception_handlers(app)
 app.include_router(health.router)
 app.include_router(me.router)
+app.include_router(recipes.router)

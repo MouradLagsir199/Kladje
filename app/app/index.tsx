@@ -1,5 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { fontFamily } from "@/theme/fonts";
+import { color, space, type } from "@/theme/tokens";
+
 export default function Home() {
   return (
     <View style={styles.container}>
@@ -14,16 +17,21 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    padding: 24,
+    gap: space.md,
+    padding: space.xxl,
+    backgroundColor: color.canvas,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontFamily: fontFamily["700"],
+    fontSize: type.display.size,
+    lineHeight: type.display.size * type.display.lineHeight,
+    color: color.ink,
   },
   subtitle: {
-    fontSize: 14,
-    color: "#6e6e73",
+    fontFamily: fontFamily["400"],
+    fontSize: type.body.size,
+    lineHeight: type.body.size * type.body.lineHeight,
+    color: color.muted,
     textAlign: "center",
   },
 });

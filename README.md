@@ -1,6 +1,6 @@
-# Receptenapp — Technical Plan
+# Kladje — Technical Plan
 
-Working name: **Receptenapp** (sibling product: **Prakkie**, which owns supermarket prices and product matching).
+Working name: **Kladje** (sibling product: **Prakkie**, which owns supermarket prices and product matching).
 
 Dutch-market mobile app that imports recipes from TikTok, Reels, YouTube, Pinterest and food blogs,
 normalises them to Dutch ingredients and metric units, and supports week planning, a price-free

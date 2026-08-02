@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Receptenapp",
-    "slug": "receptenapp",
+    "name": "Kladje",
+    "slug": "kladje",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "receptenapp",
+    "scheme": "kladje",
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "nl.receptenapp.app",

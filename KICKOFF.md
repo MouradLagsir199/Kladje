@@ -5,7 +5,7 @@ everything below the line.
 
 ---
 
-You are building **Receptenapp**, a Dutch recipe app, from a complete written plan. I am a solo
+You are building **Kladje**, a Dutch recipe app, from a complete written plan. I am a solo
 developer. Your job is to build it with as few interruptions to me as possible, while stopping cleanly
 whenever you genuinely need something only I can provide.
 

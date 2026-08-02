@@ -152,7 +152,7 @@ Shared header: title, a week-number stepper (‹ wk N ›), and a 2-tab row (Wee
   and — separately boxed, visually distinct with its own dark "P" mark — the Prakkie hand-off card
   (explanation text + one button that becomes a confirmation strip once sent). Keep this box visually
   separate from the app's own accent colour per D1/D2 — it's clearly "another product," not a
-  Receptenapp feature.
+  Kladje feature.
 
 ## Voorraadkast (pantry) — reached from Boodschappen, no dedicated route named yet
 

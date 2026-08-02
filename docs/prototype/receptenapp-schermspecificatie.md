@@ -1,4 +1,4 @@
-# Receptenapp — Schermspecificatie
+# Kladje — Schermspecificatie
 
 Nederlandse markt. Import van recepten uit TikTok / Reels / YouTube / Pinterest / foodblogs, met weekplanning, boodschappenlijst gekoppeld aan supermarktdata, en delen in groepen.
 

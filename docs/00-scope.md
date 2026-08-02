@@ -2,7 +2,7 @@
 
 ## The product in one paragraph
 
-People find recipes on TikTok, Reels, YouTube and blogs, and then lose them. Receptenapp lets you
+People find recipes on TikTok, Reels, YouTube and blogs, and then lose them. Kladje lets you
 share a video into the app and get back a clean, structured, Dutch-language recipe with metric
 quantities, editable before saving. From there: a week planner, a shopping list generated from that
 week's plan, and small private groups to share recipes with a household or friends.

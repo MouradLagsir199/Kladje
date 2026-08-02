@@ -4,7 +4,7 @@ Instructions for Claude Code working in this repository. Read this before touchi
 
 ## What this is
 
-**Receptenapp** — a Dutch mobile app that imports recipes from social media and blogs, normalises them
+**Kladje** — a Dutch mobile app that imports recipes from social media and blogs, normalises them
 to Dutch ingredients and metric units, and provides week planning, a price-free shopping list, and
 sharing in small groups.
 

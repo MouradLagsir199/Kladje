@@ -64,9 +64,11 @@ Implementation notes (task 1.1, `services/url_norm.py`):
   stop one page producing two cache keys
 - Instagram `/reels/` and `/tv/` collapse to `/reel/`, but **`/p/` is preserved**: Instagram serves
   photo posts there too, and rewriting those to `/reel/` would misdescribe the source
-- **Not yet done:** resolving a Pin to its destination blog URL. That needs the Pin's HTML, not a
-  redirect, so it belongs with the Pinterest extractor rather than in a pure URL transform.
-  `pin.it/{code}` currently normalises to `pinterest.com/pin/{id}`
+- **Not yet done:** resolving a Pin to its destination blog URL. That is not a redirect, so it
+  cannot live in a pure URL transform — it needs the Apify Pinterest actor (`tseqJicQpIxyFdHNB`, see
+  `docs/15-actors-apify.md`), which makes it a *paid* call behind the quota check rather than a free
+  string operation. `pin.it/{code}` currently normalises to `pinterest.com/pin/{id}` and stops
+  there; once resolved, the destination is fed back through `normalise_url` and imported as a blog
 - A redirect resolver that fails is not fatal — the unresolved form is still a stable cache key,
   and failing an import because a shortener was slow is the worse trade
 

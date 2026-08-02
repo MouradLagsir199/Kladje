@@ -1,7 +1,8 @@
-# Apify Actor Reference — Social Media Transcript Extraction
+# Apify Actor Reference — Social Media Extraction
 
 Documentation of Apify actors used to retrieve video transcripts and metadata from
-social platforms.
+social platforms. Pinterest is the exception: it resolves a Pin to its destination
+URL rather than extracting content.
 
 ## Authentication
 
@@ -116,6 +117,74 @@ transcript is needed (cheaper/faster).
 
 - Title/caption: `Video_title` (title), `Description` (caption/description text)
 - Transcript: `transcriptText` (full text), `timestamps` (timestamped, `"m:ss"` string)
+
+---
+
+## Pinterest
+
+Different in kind from the three above: Pinterest is not a transcript source. A Pin is a *pointer*
+to a real recipe page, and that page is a far better source than the Pin (see `docs/03`, Stage 0).
+So this actor is used for one thing only — resolving a Pin to its **destination URL**, which is then
+fed back through URL normalisation and handled as a blog.
+
+- **Actor ID:** `tseqJicQpIxyFdHNB`
+- **Approx cost:** not yet measured — **measure on the first real run before enabling this path.**
+  It uses residential proxy, which is the expensive tier, and unlike the others it buys us a URL
+  rather than content
+- **Approx runtime:** not yet measured
+
+### Input
+
+The published example scrapes a search page for up to 50 000 pins. That is the wrong shape for us
+entirely — we resolve a single Pin:
+
+```python
+run_input = {
+    "startUrls": ["https://www.pinterest.com/pin/123456789012345678/"],
+    "type": "all-pins",
+    "limit": 1,
+    "sentinent_analysis": False,
+    "content_analysis": False,
+    "proxyConfiguration": {
+        "useApifyProxy": True,
+        "apifyProxyGroups": ["RESIDENTIAL"],
+    },
+}
+run = client.actor("tseqJicQpIxyFdHNB").call(run_input=run_input)
+```
+
+- **`limit` must be 1.** The example's `50000` is a search-scraping default; copying it into a
+  per-import call would be a runaway cost bug, not a slow request
+- `sentinent_analysis` (sic — the typo is in the actor's own input schema, don't "fix" it) and
+  `content_analysis` stay `False`. Both are extra spend for output we don't use
+- Residential proxy is required: Pinterest blocks datacenter IPs
+
+### Output shape (per item)
+
+**Unverified.** Every other entry in this file documents a shape observed from a real run; this one
+has not been run yet. Capture a raw payload into `api/tests/fixtures/apify/` the same way task 2.1
+does for the other platforms, then fill this in — do not code against a guessed field name.
+
+What we need from it is the outbound destination link of the Pin (plus the Pin's own image URL as a
+fallback thumbnail). Confirm what that field is actually called before wiring it up.
+
+### Key fields for Kladje
+
+| Field | Purpose |
+|---|---|
+| destination/outbound URL (name TBC) | Re-normalised via `services/url_norm.py`, then imported as a blog |
+| image URL (name TBC) | Fallback thumbnail if the destination page has none |
+
+### Notes
+
+- A Pin with no outbound destination (image-only, or one pointing at another Pin) has no better
+  source than itself. Treat that as a normal failure with its own copy in the taxonomy, not as an
+  error — the user pasted something we genuinely cannot import
+- This is a **paid call**, so it sits behind the same server-side quota check as every other paid
+  call (non-negotiable 7). It also means a Pinterest import costs strictly more than the same recipe
+  pasted as a blog URL: pin resolution *plus* synthesis
+- Not wired up yet. `services/url_norm.py` currently normalises `pin.it/{code}` and
+  `pinterest.com/pin/{id}` to a canonical Pin URL and stops there
 
 ---
 

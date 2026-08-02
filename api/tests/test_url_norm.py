@@ -130,7 +130,7 @@ def test_normalisation_is_idempotent() -> None:
         ("https://youtube.com/watch?v=abc", SourcePlatform.youtube),
         ("https://pin.it/abc123", SourcePlatform.pinterest),
         ("https://nl.pinterest.com/pin/1", SourcePlatform.pinterest),
-        ("https://leukerecepten.nl/pasta", SourcePlatform.blog),
+        ("https://leukerecepten.nl/pasta", SourcePlatform.web),
     ],
 )
 def test_detect_platform(url: str, platform: SourcePlatform) -> None:

@@ -10,20 +10,10 @@ resolved by asking the network (`vm.tiktok.com`, `pin.it`) are handled behind an
 """
 
 import re
-from enum import StrEnum
 from typing import Protocol
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-
-class SourcePlatform(StrEnum):
-    """Local to Stage 0. The persisted platform enum arrives with the `imports` migration."""
-
-    tiktok = "tiktok"
-    instagram = "instagram"
-    youtube = "youtube"
-    pinterest = "pinterest"
-    blog = "blog"
-
+from receptenapp.db.models import SourcePlatform
 
 # Exact-match tracking parameters. `si` and `feature` are YouTube's, `igsh`/`igshid` Instagram's,
 # `_t`/`_r` TikTok's.
@@ -89,7 +79,7 @@ def detect_platform(host: str) -> SourcePlatform:
         return SourcePlatform.youtube
     if host in {"pinterest.com", "pin.it"} or ".pinterest." in f".{host}":
         return SourcePlatform.pinterest
-    return SourcePlatform.blog
+    return SourcePlatform.web
 
 
 def needs_redirect_resolution(url: str) -> bool:

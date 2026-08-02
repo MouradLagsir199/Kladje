@@ -53,7 +53,7 @@ own library.** Nothing in this phase is optional to that sentence.
 
 | ID | Task | Acceptance | Verify |
 |---|---|---|---|
-| M1 | Apply migration 002 (`recipes`, `recipe_ingredients`, `recipe_steps`, `collections`, `collection_recipes`, `cook_logs`) — already written, needs applying and a downgrade check | `upgrade head` then `downgrade -1` both clean on a scratch DB | `uv run alembic upgrade head && uv run alembic downgrade -1` |
+| ~~M1~~ | ~~Apply migration 002~~ — **done 2026-08-03.** Verified upgrade → downgrade → upgrade on the scratch DB, then applied to `receptenapp_dev` | Round-trip clean; enums correctly survive the downgrade (they belong to 001) | `uv run alembic upgrade head && uv run alembic downgrade -1` |
 | M2 | Migration 003, **minimal**: `imports` + `import_events`. No `source_cache`, no quota index yet. Adds the deferred `recipes.import_id` FK | Upgrade + downgrade clean | `uv run alembic upgrade head` |
 | M3 | **[B]** `EvidenceBundle` — the one structure every source collapses into, per `docs/03-import-pipeline.md` | Round-trips through Pydantic | `pytest tests/test_evidence.py` |
 | M4 | Blog extractor: JSON-LD → microdata → WP Recipe Maker, in that order of trust | 6 saved Dutch/English blog HTML fixtures produce an EvidenceBundle | `pytest tests/test_jsonld.py` |

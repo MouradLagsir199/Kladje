@@ -205,6 +205,10 @@ API_BASE_URL=https://receptenapp-api-dev.azurewebsites.net
 
 # --- Database ---
 DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/receptenapp?ssl=require
+# Scratch database for verifying migrations against a fresh schema before touching
+# receptenapp_dev. Same server (receptenapp-pg-dev-ne), so no extra cost:
+#   DATABASE_URL=...@receptenapp-pg-dev-ne.postgres.database.azure.com:5432/kladje_scratch?ssl=require
+#   uv run alembic upgrade head && uv run alembic downgrade -1
 
 # --- Auth (Clerk) ---
 CLERK_SECRET_KEY=sk_test_...

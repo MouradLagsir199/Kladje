@@ -9,7 +9,9 @@ This is the product. Everything else in the app is a place to put the output.
    see the update to ADR-014; cookbook-photo import is deferred to v2 on cost grounds.
 2. **Never fabricate silently.** Anything the model invents gets `estimated` provenance and shows the
    user a yellow dot. A wrong oven temperature presented as fact is worse than a red "ontbreekt".
-3. **Cache before you spend.** Check `source_cache` before any paid call.
+3. **Cache before you spend.** Check `source_cache` before any paid call. *(Deferred out of the MVP
+   — see H1 in `docs/13-build-tasks.md`. Until then every import pays, which is pennies with no users
+   and would be negligence with them. The flowchart below is the target, not what is built.)*
 4. **Always leave an exit.** Every failure state offers manual entry. A dead end costs you the user.
 5. **Rewrite, never copy.** Method text is always reworded by the model. This is both a copyright
    requirement and a quality improvement. See `07-legal-avg.md`.
@@ -53,7 +55,7 @@ Rules:
     to a real recipe page, and that page is a far better source than the Pin
 - Strip trailing slashes and fragments
 
-Implementation notes (task 1.1, `services/url_norm.py`):
+Implementation notes (built — `services/url_norm.py`):
 
 - `youtu.be` and `l.instagram.com` are **not** resolved over the network. Both are decodable
   offline — `youtu.be/{id}` is just `watch?v={id}`, and `l.instagram.com` carries the destination in

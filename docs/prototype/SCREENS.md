@@ -199,7 +199,7 @@ already treats it as one thing.
   running, survives navigating away from Kookmodus in the prototype's state model. Matches
   `docs/05-client.md`'s "timers float above the pager and keep running across swipes."
 
-## Gaps worth a decision before Phase 3
+## Gaps worth a decision before building these screens
 
 None of these block Phase 0/1/2 work, but they're real screens in the prototype without a named route
 in `docs/05-client.md`'s tree yet: the onboarding **market** step, **Zoeken** (search), and

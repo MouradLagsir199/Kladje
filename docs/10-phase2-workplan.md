@@ -1,7 +1,14 @@
-# 10 — Phase 2 Work Plan: Import Quality Across Platforms
+# 10 — Import Quality Across Platforms
 
-Weeks 4–6. Entering with Phase 1 complete: blog import works end to end, review screen variant A is
-built, recipes save to the library.
+> **The "Phase 2, weeks 4–6" framing is superseded** — see `docs/13-build-tasks.md`. Multi-platform
+> import is now part of the MVP (M5–M7), not a later hardening phase, because "import a recipe from
+> social media" is the product; a version that only reads blogs is not worth shipping.
+>
+> The content is very much alive. **§2.5's validation rules are what M10 implements**, and the exit
+> criteria below become the Phase H eval gate once there is a corpus to measure against.
+
+Originally written as a follow-up phase entered with blog import working end to end, the review
+screen built, and recipes saving to the library.
 
 **Goal of this phase:** every source your users will actually paste produces a good recipe, and you know
 what it costs. Nothing in Phases 3–6 is worth starting until this is true, because import quality is the

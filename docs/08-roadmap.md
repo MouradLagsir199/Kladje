@@ -1,5 +1,18 @@
 # 08 — Roadmap
 
+> **Superseded on 2026-08-03 as a sequencing document.** The Phase 0–7 breakdown below is no longer
+> what we are building against — `docs/13-build-tasks.md` is, and it puts a working MVP first
+> (Phase M), then the rest of the prototype (N), then hardening (H).
+>
+> The week-by-week phasing here was wrong in one specific way: it treated caching, circuit breakers,
+> quota and telemetry as phase-ordered work rather than as things you add once something exists to
+> protect. It also put every screen behind a fully hardened pipeline, which meant the UI stayed
+> unproven for months.
+>
+> Kept because the *reasoning* below is still right — especially the sequencing principle in the
+> next paragraph, which the MVP ordering follows more faithfully than the phases ever did — along
+> with the effort estimates and the target numbers.
+
 Assumption: one developer, working with Claude Code, part-time-to-full-time. Durations are calendar
 estimates for a solo build, not ideal-world engineering days.
 

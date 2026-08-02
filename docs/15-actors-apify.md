@@ -162,7 +162,7 @@ run = client.actor("tseqJicQpIxyFdHNB").call(run_input=run_input)
 ### Output shape (per item)
 
 **Unverified.** Every other entry in this file documents a shape observed from a real run; this one
-has not been run yet. Capture a raw payload into `api/tests/fixtures/apify/` the same way task 2.1
+has not been run yet. Capture a raw payload into `api/tests/fixtures/apify/` the same way task M6
 does for the other platforms, then fill this in — do not code against a guessed field name.
 
 What we need from it is the outbound destination link of the Pin (plus the Pin's own image URL as a

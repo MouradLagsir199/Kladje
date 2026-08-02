@@ -25,7 +25,14 @@ function AuthGate() {
     }
   }, [isLoaded, isSignedIn, segments, router]);
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      {/* Import is a modal over whatever you were doing, and cook mode takes the whole screen. */}
+      <Stack.Screen name="import" options={{ presentation: "modal" }} />
+      <Stack.Screen name="recipe/[id]/cook" options={{ presentation: "fullScreenModal" }} />
+    </Stack>
+  );
 }
 
 export default function RootLayout() {

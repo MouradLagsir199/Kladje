@@ -21,6 +21,9 @@ export const color = {
   line: "#e9e9ec",
   lineWarm: "#e2e0da",
   lineSoft: "#ececea",
+  // Hairline under sticky headers and above the tab bar. Lighter than `line` on purpose:
+  // it sits under blurred chrome, where `line` reads as a hard edge.
+  lineFaint: "#efeff1",
 
   // Accent — the tomato red
   accent: "#e8442c",
@@ -38,6 +41,14 @@ export const color = {
   warnWash: "#fdf6e3",
   warnBorder: "#f0e0b0",
   warnInk: "#7a5a10",
+
+  // The allergy card on Receptdetail. Red, not amber — an allergen warning comes from the user's
+  // own profile, not from how sure we are about a value, so it must not read as a provenance state.
+  dangerWash: "#fdeeeb",
+  dangerBorder: "#f6cfc7",
+
+  // Import progress, step not started yet.
+  pending: "#dcdce0",
 
   // Source badges
   sourceVideo: "#8a5fc4",
@@ -66,6 +77,10 @@ export const type = {
   },
   tiny: { size: 9.5, weight: "500", lineHeight: 1, mono: true }, // "geschat"
 
+  // Tab bar only. Same size as `micro` but proportional and sentence case — `micro` is the mono
+  // uppercase treatment for data labels, and a navigation label is not data.
+  tabLabel: { size: 10.5, weight: "600", lineHeight: 1 },
+
   // Cook mode only — readable at 60cm with dirty hands
   cookStep: { size: 24, weight: "600", lineHeight: 1.35 },
   cookMeta: { size: 15, weight: "500", lineHeight: 1.3 },
@@ -81,6 +96,7 @@ export const radius = {
   row: 12, // list rows, ingredient rows
   input: 10,
   chip: 9,
+  check: 6, // ingredient and shopping checkboxes
   dot: 999,
 } as const;
 

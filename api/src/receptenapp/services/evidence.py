@@ -61,9 +61,9 @@ class EvidenceBundle(BaseModel):
     def is_silent(self) -> bool:
         """A video that yielded no spoken words.
 
-        Not an error: plenty of cooking videos are music-over-hands. It means the caption is the
-        only real evidence, and the import should route to prefilled manual entry rather than
-        pretending a recipe was extracted.
+        Factual, not a routing decision — see `needs_manual_entry`. Plenty of cooking videos are
+        music-over-hands while the caption carries the full ingredient list, and those import
+        perfectly well.
         """
         return self.platform in _VIDEO_PLATFORMS and not self.transcript_text
 
@@ -80,6 +80,17 @@ class EvidenceBundle(BaseModel):
         Cheaper and more honest to fail early than to pay for a hallucinated recipe.
         """
         return not self.has_structured_recipe and self.evidence_chars() < minimum_chars
+
+    @property
+    def needs_manual_entry(self) -> bool:
+        """The `silent_video` route from docs/03: nothing here a model could turn into a recipe.
+
+        Deliberately not "the video had no speech". A silent video whose caption lists every
+        ingredient — very common on TikTok, where creators type the recipe under the clip — is a
+        normal import. What sends someone to manual entry is the *total* evidence being empty,
+        which is why this is the transcript and the caption together, not either alone.
+        """
+        return self.is_too_thin_to_synthesise()
 
     def truncated(self, *, max_transcript_chars: int, max_page_chars: int) -> "EvidenceBundle":
         """A copy with the long free-text fields clipped, for prompt cost control.

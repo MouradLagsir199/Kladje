@@ -122,3 +122,25 @@ def test_truncation_leaves_the_original_untouched() -> None:
 def test_truncation_is_a_no_op_when_already_short() -> None:
     bundle = _bundle(page_text="kort", transcript=[TranscriptSegment(text="ook kort")])
     assert bundle.truncated(max_transcript_chars=1000, max_page_chars=1000) == bundle
+
+
+def test_silent_video_with_a_full_caption_is_a_normal_import() -> None:
+    """The common TikTok shape: no speech, but the recipe typed under the clip.
+
+    Routing this to manual entry because the audio was music would throw away a perfectly good
+    import — so "no speech" and "nothing to work with" must stay separate questions.
+    """
+    bundle = _bundle(
+        caption=(
+            "Crispy potato nuggets. Ingredients: 5 medium potatoes, 100 g cheese, "
+            "2 el bloem, zout. Bake 20 min at 200 graden."
+        )
+    )
+    assert bundle.is_silent is True
+    assert bundle.needs_manual_entry is False
+
+
+def test_silent_video_with_nothing_else_goes_to_manual_entry() -> None:
+    bundle = _bundle(caption="😍🔥")
+    assert bundle.is_silent is True
+    assert bundle.needs_manual_entry is True

@@ -21,7 +21,11 @@ from bs4 import BeautifulSoup, Tag
 from receptenapp.db.models import SourcePlatform
 from receptenapp.providers.http import PageFetcher
 from receptenapp.services.evidence import EvidenceBundle
-from receptenapp.services.url_norm import detect_platform, normalise_url, normalise_url_async
+from receptenapp.services.url_norm import (
+    detect_platform,
+    needs_redirect_resolution,
+    normalise_url,
+)
 
 # The one input that can be arbitrarily long, so it needs a ceiling. Roughly 6k tokens, which is
 # about half a cent on mini-tier — generous enough that a food blog's opening anecdote does not
@@ -275,8 +279,13 @@ async def fetch_and_extract(url: str, fetcher: PageFetcher) -> EvidenceBundle:
     Re-normalises against the URL we *landed* on rather than the one asked for: shorteners and
     marketing redirects mean those differ often, and the destination is the honest cache key.
     """
-    normalised = await normalise_url_async(url, fetcher.resolve_redirect)
-    page = await fetcher.fetch(normalised)
+    # Fetch the real URL, not the normalised one. `url_norm` is a *cache key*: it lowercases the
+    # host and strips `www.`, which is right for deduplication and wrong for HTTP — plenty of hosts
+    # only answer on one of the two. Only shortener resolution changes what we actually request.
+    fetchable = url
+    if needs_redirect_resolution(url):
+        fetchable = await fetcher.resolve_redirect(url)
+    page = await fetcher.fetch(fetchable)
     final_norm = normalise_url(page.url)
     return extract_from_html(
         page.html,

@@ -148,3 +148,50 @@ async def test_shortener_failure_falls_back_to_the_original_url() -> None:
 
     original = "https://vm.tiktok.com/ZMabc/"
     assert await fetcher_for(handler).resolve_redirect(original) == original
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status", [402, 429])
+async def test_publisher_block_is_its_own_code(status: int) -> None:
+    """allrecipes/People Inc answer 402 behind Cloudflare, pointing at their licensing contact.
+
+    Distinct from scraper_failed on purpose: retrying never helps, so the client should offer
+    manual entry straight away rather than a retry button. We do not try to defeat it.
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(status, headers={"server": "cloudflare"}, text="license our content")
+
+    with pytest.raises(ImportFailedError) as exc:
+        await fetcher_for(handler).fetch("https://www.allrecipes.com/x")
+    assert exc.value.error_code is ImportErrorCode.source_blocked
+
+
+@pytest.mark.asyncio
+async def test_a_plain_403_is_still_treated_as_gone() -> None:
+    # Without the Cloudflare marker, 403 means the page is private rather than the site refusing us.
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(403, headers={"server": "nginx"})
+
+    with pytest.raises(ImportFailedError) as exc:
+        await fetcher_for(handler).fetch("https://blog.test/x")
+    assert exc.value.error_code is ImportErrorCode.private_or_removed
+
+
+@pytest.mark.asyncio
+async def test_the_url_fetched_is_the_real_one_not_the_cache_key() -> None:
+    """`url_norm` strips `www.`, which is right for deduplication and wrong for HTTP.
+
+    Several hosts answer on only one of the two, so requesting the normalised form turns a working
+    import into a mystery failure.
+    """
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(str(request.url))
+        return httpx.Response(200, html=RECIPE_HTML)
+
+    bundle = await fetch_and_extract("https://www.blog.test/Snert/", fetcher_for(handler))
+    assert seen == ["https://www.blog.test/Snert/"], seen
+    # ...while the cache key is still the canonical form.
+    assert bundle.url_norm == "https://blog.test/Snert"

@@ -145,6 +145,9 @@ def test_detect_platform(url: str, platform: SourcePlatform) -> None:
         ("https://vm.tiktok.com/ZMabc123/", True),
         ("https://vt.tiktok.com/ZSabc123/", True),
         ("https://pin.it/abc123", True),
+        # The form TikTok's own share sheet produces, so the one users actually paste.
+        ("https://www.tiktok.com/t/ZP8n1HAPY/", True),
+        ("https://tiktok.com/t/ZP8n1HAPY", True),
         # Resolvable offline, so no request should be spent on them.
         ("https://youtu.be/dQw4w9WgXcQ", False),
         ("https://l.instagram.com/?u=https%3A%2F%2Fx.nl%2Fa", False),

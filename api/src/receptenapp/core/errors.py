@@ -71,6 +71,10 @@ class ImportErrorCode(enum.StrEnum):
 
     unsupported_url = "unsupported_url"
     private_or_removed = "private_or_removed"
+    # The publisher blocks automated access on purpose (allrecipes/People Inc answer with a
+    # Cloudflare 402 pointing at their licensing contact). Distinct from scraper_failed because
+    # retrying never helps, and we do not try to defeat it — see docs/07-legal-avg.md.
+    source_blocked = "source_blocked"
     no_recipe_found = "no_recipe_found"
     low_confidence = "low_confidence"
     no_transcript = "no_transcript"

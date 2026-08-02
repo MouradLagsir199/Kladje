@@ -56,6 +56,9 @@ class HttpxPageFetcher:
     ) -> None:
         self._max_bytes = max_bytes
         self._client = httpx.AsyncClient(
+            # Real Chrome speaks HTTP/2. Claiming to be Chrome over HTTP/1.1 is an obvious
+            # mismatch, and some CDNs treat it as one.
+            http2=True,
             follow_redirects=True,
             timeout=timeout_seconds,
             headers={
@@ -71,6 +74,19 @@ class HttpxPageFetcher:
     async def fetch(self, url: str) -> FetchedPage:
         try:
             async with self._client.stream("GET", url) as response:
+                # 402 is what People Inc (allrecipes and friends) return behind Cloudflare when
+                # they want commercial users to license the content instead. 429 is the same
+                # message with less punctuation. Neither is worth retrying, and neither is worth
+                # defeating — a distinct code lets the client offer manual entry immediately.
+                if response.status_code in (402, 429) or (
+                    response.status_code == 403
+                    and "cloudflare" in response.headers.get("server", "").lower()
+                ):
+                    raise ImportFailedError(
+                        ImportErrorCode.source_blocked,
+                        "Deze site staat automatisch importeren niet toe.",
+                        details={"status_code": response.status_code},
+                    )
                 if response.status_code in (401, 403, 404, 410):
                     raise ImportFailedError(
                         ImportErrorCode.private_or_removed,

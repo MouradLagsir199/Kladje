@@ -36,6 +36,11 @@ TRACKING_PREFIXES = ("utm_",)
 # Shorteners whose target can only be learned by following a redirect.
 NETWORK_SHORTENER_HOSTS = frozenset({"vm.tiktok.com", "vt.tiktok.com", "pin.it"})
 
+# `tiktok.com/t/<code>` is the same kind of shortener, but on the main host rather than its own —
+# so it cannot be recognised by hostname alone. This is the form the TikTok share sheet produces,
+# which makes it the one users actually paste.
+_SHORTENED_PATH_RE = re.compile(r"^/t/[A-Za-z0-9]+/?$")
+
 _TIKTOK_VIDEO_RE = re.compile(r"^/@(?P<author>[^/]+)/video/(?P<id>\d+)")
 _TIKTOK_BARE_VIDEO_RE = re.compile(r"^/video/(?P<id>\d+)")
 _INSTAGRAM_RE = re.compile(r"^/(?:reel|reels|tv|p)/(?P<code>[^/]+)")
@@ -84,7 +89,11 @@ def detect_platform(host: str) -> SourcePlatform:
 
 def needs_redirect_resolution(url: str) -> bool:
     """True when the URL hides its destination behind a redirect we cannot infer offline."""
-    return _canonical_host(urlsplit(url).netloc) in NETWORK_SHORTENER_HOSTS
+    parts = urlsplit(url if "//" in url[:10] else f"https://{url}")
+    host = _canonical_host(parts.netloc)
+    if host in NETWORK_SHORTENER_HOSTS:
+        return True
+    return host == "tiktok.com" and bool(_SHORTENED_PATH_RE.match(parts.path))
 
 
 def _build(host: str, path: str, query: str = "") -> str:

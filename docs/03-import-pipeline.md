@@ -267,6 +267,7 @@ Every one of these needs distinct user-facing copy. Generic errors make the app 
 |---|---|---|
 | `unsupported_url` | Not a recognised platform | "Deze link kennen we niet" + manual entry |
 | `private_or_removed` | Post deleted or private | "Dit bericht is niet meer beschikbaar" |
+| `source_blocked` | Publisher blocks automated access on purpose | "Deze site staat importeren niet toe" + manual entry. **No retry button** — retrying never helps |
 | `no_recipe_found` | Content isn't a recipe | "Hier zit geen recept in" + manual entry |
 | `low_confidence` | Parse too thin to be useful | Partial draft, prefilled, review flagged |
 | `no_transcript` | Apify returned no transcript | Continues on caption alone; often ends as `low_confidence` |
@@ -279,6 +280,26 @@ Every one of these needs distinct user-facing copy. Generic errors make the app 
 
 **No failed import counts against quota.** `low_confidence` does count, because the user got a usable
 draft. Make that rule explicit in code, not implied.
+
+### On `source_blocked`, and why we do not route around it
+
+Some publishers refuse automated access deliberately. allrecipes (People Inc) answers with a
+Cloudflare `402` whose body reads *"if you would like to access our content for commercial
+purposes, contact support@people.inc"*. That is a licensing position, not a misconfiguration.
+
+**We do not try to defeat it.** Not with a spoofed TLS fingerprint, not by routing through a
+residential proxy, not via a scraping actor. Three reasons, in order of weight:
+
+1. It is circumventing an access control that a rightsholder put there on purpose, by an app that
+   stores and re-displays their content commercially
+2. It contradicts the posture in `07-legal-avg.md`, where method text is rewritten and sources are
+   always attributed precisely *because* we take the copyright question seriously. Being scrupulous
+   in the output while forcing the door on the input is not a coherent position
+3. It is fragile, and losing the argument costs the whole app
+
+The honest handling is a distinct code with its own copy and a straight route to manual entry — the
+user can still get their recipe, by typing it. If a blocked site turns out to be popular with users,
+the fix is to ask the publisher, not to get better at pretending to be Chrome.
 
 ## Idempotency and abuse
 

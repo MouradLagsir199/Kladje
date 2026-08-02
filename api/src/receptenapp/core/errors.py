@@ -1,3 +1,4 @@
+import enum
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -59,6 +60,47 @@ class RateLimitedError(AppError):
     ) -> None:
         super().__init__(message, details=details)
         self.retry_after = retry_after
+
+
+class ImportErrorCode(enum.StrEnum):
+    """The failure taxonomy from docs/03-import-pipeline.md.
+
+    Closed set on purpose: every code owes the user distinct Dutch copy and an exit. A generic
+    error makes the app feel broken, which is why there is no catch-all member here.
+    """
+
+    unsupported_url = "unsupported_url"
+    private_or_removed = "private_or_removed"
+    no_recipe_found = "no_recipe_found"
+    low_confidence = "low_confidence"
+    no_transcript = "no_transcript"
+    silent_video = "silent_video"
+    scraper_failed = "scraper_failed"
+    model_failed = "model_failed"
+    quota_exceeded = "quota_exceeded"
+    media_too_large = "media_too_large"
+    timeout = "timeout"
+
+
+class ImportFailedError(AppError):
+    """An import that could not produce a draft.
+
+    Carries a taxonomy code rather than being one class per failure, because the set is fixed and
+    the client switches on the code to choose copy and an exit route.
+    """
+
+    status_code = 422
+
+    def __init__(
+        self,
+        error_code: ImportErrorCode,
+        message: str,
+        *,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message, details=details)
+        self.code = str(error_code)
+        self.error_code = error_code
 
 
 def _error_body(code: str, message: str, details: dict[str, Any] | None) -> dict[str, Any]:

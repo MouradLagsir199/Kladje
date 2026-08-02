@@ -14,11 +14,14 @@ dict of about a kilobyte instead of half a megabyte of page — which is most of
 import json
 import re
 from typing import Any
+from urllib.parse import urlsplit
 
 from bs4 import BeautifulSoup, Tag
 
 from receptenapp.db.models import SourcePlatform
+from receptenapp.providers.http import PageFetcher
 from receptenapp.services.evidence import EvidenceBundle
+from receptenapp.services.url_norm import detect_platform, normalise_url, normalise_url_async
 
 # The one input that can be arbitrarily long, so it needs a ceiling. Roughly 6k tokens, which is
 # about half a cent on mini-tier — generous enough that a food blog's opening anecdote does not
@@ -264,6 +267,23 @@ def _readable_text(soup: BeautifulSoup) -> str | None:
     text = _WHITESPACE_RE.sub(" ", text)
     text = _BLANK_LINES_RE.sub("\n\n", text)
     return text[:MAX_PAGE_TEXT_CHARS] or None
+
+
+async def fetch_and_extract(url: str, fetcher: PageFetcher) -> EvidenceBundle:
+    """URL in, evidence out. The blog half of Stage 1.
+
+    Re-normalises against the URL we *landed* on rather than the one asked for: shorteners and
+    marketing redirects mean those differ often, and the destination is the honest cache key.
+    """
+    normalised = await normalise_url_async(url, fetcher.resolve_redirect)
+    page = await fetcher.fetch(normalised)
+    final_norm = normalise_url(page.url)
+    return extract_from_html(
+        page.html,
+        url=page.url,
+        url_norm=final_norm,
+        platform=detect_platform(urlsplit(final_norm).netloc),
+    )
 
 
 def extract_from_html(

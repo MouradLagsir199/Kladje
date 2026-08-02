@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 
 import { useWarmUpBrowser } from "@/lib/use-warm-up-browser";
+import { strings } from "@/strings/nl";
 import { fontFamily } from "@/theme/fonts";
 import { color, radius, space, type } from "@/theme/tokens";
 
@@ -29,15 +30,15 @@ export default function SignIn() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Receptenapp</Text>
-      <Text style={styles.subtitle}>Log in om verder te gaan.</Text>
+      <Text style={styles.title}>{strings.appName}</Text>
+      <Text style={styles.subtitle}>{strings.signIn.subtitle}</Text>
 
       <View style={styles.buttons}>
         <Pressable onPress={() => onPress("oauth_apple")} style={styles.buttonPrimary}>
-          <Text style={styles.buttonPrimaryText}>Ga verder met Apple</Text>
+          <Text style={styles.buttonPrimaryText}>{strings.signIn.apple}</Text>
         </Pressable>
         <Pressable onPress={() => onPress("oauth_google")} style={styles.buttonSecondary}>
-          <Text style={styles.buttonSecondaryText}>Ga verder met Google</Text>
+          <Text style={styles.buttonSecondaryText}>{strings.signIn.google}</Text>
         </Pressable>
       </View>
     </View>

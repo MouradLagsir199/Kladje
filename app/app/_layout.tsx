@@ -1,7 +1,8 @@
 import { ClerkLoaded, ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { tokenCache } from "@/lib/token-cache";
 import { useAppFonts } from "@/theme/fonts";
@@ -29,6 +30,7 @@ function AuthGate() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useAppFonts();
+  const [queryClient] = useState(() => new QueryClient());
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -43,7 +45,9 @@ export default function RootLayout() {
   return (
     <ClerkProvider tokenCache={tokenCache}>
       <ClerkLoaded>
-        <AuthGate />
+        <QueryClientProvider client={queryClient}>
+          <AuthGate />
+        </QueryClientProvider>
       </ClerkLoaded>
     </ClerkProvider>
   );

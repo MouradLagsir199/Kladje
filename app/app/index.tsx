@@ -1,23 +1,51 @@
-import { useAuth, useUser } from "@clerk/clerk-expo";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useAuth } from "@clerk/clerk-expo";
+import { useQuery } from "@tanstack/react-query";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useApiClient } from "@/api/client";
+import type { MeResponse } from "@/api/types";
+import { strings } from "@/strings/nl";
 import { fontFamily } from "@/theme/fonts";
 import { color, radius, space, type } from "@/theme/tokens";
 
 export default function Home() {
   const { signOut } = useAuth();
-  const { user } = useUser();
+  const apiClient = useApiClient();
+
+  const {
+    data: me,
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["me"],
+    queryFn: async (): Promise<MeResponse> => {
+      const response = await apiClient("/v1/me");
+      if (!response.ok) {
+        throw new Error(`GET /v1/me failed met status ${response.status}`);
+      }
+      return response.json();
+    },
+  });
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Receptenapp</Text>
-      <Text style={styles.subtitle}>
-        Ingelogd als {user?.primaryEmailAddress?.emailAddress ?? user?.fullName ?? "onbekend"}.
-      </Text>
-      <Text style={styles.note}>GET /v1/me komt in de volgende taak (0.14).</Text>
+      <Text style={styles.title}>{strings.appName}</Text>
+
+      {isPending && <ActivityIndicator color={color.ink} />}
+      {isError && <Text style={styles.subtitle}>{strings.home.loadError}</Text>}
+      {me && (
+        <Text style={styles.subtitle}>
+          {strings.home.signedInAs(
+            me.user.display_name ?? me.user.email ?? strings.home.unknownUser,
+            me.user.tier === "premium" ? "premium" : "gratis",
+            me.quota.used,
+            me.quota.limit,
+          )}
+        </Text>
+      )}
 
       <Pressable onPress={() => signOut()} style={styles.button}>
-        <Text style={styles.buttonText}>Uitloggen</Text>
+        <Text style={styles.buttonText}>{strings.home.signOut}</Text>
       </Pressable>
     </View>
   );

@@ -76,7 +76,8 @@ These come from `CLAUDE.md`. The ones you're most likely to violate by accident:
    rules in `docs/11-prompts.md` and treat them as the most important spec in the project
 4. **Method steps are always AI-rewritten**, never copied from the source. Legal requirement
 5. **No supermarket data, prices, or product matching.** That's a different app
-6. **No OCR in the link-import path.** Vision is only for cookbook photos
+6. **No OCR or vision anywhere in v1.** Cookbook-photo import is deferred to v2 on cost grounds — see
+   the update to ADR-014
 7. **Model name and prompt version are pinned in config.** Don't upgrade the model to "improve quality"
    without running `scripts/eval.py` and checking the cost table
 8. **Never call paid APIs in tests or CI.** Fixtures only

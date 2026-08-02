@@ -62,9 +62,10 @@ POST   /v1/imports/{id}/enrich         → the "Laat AI aanvullen" second model 
 POST   /v1/imports/{id}/save           → materialise draft into recipes; body { plan_entry? }
 DELETE /v1/imports/{id}                → discard draft
 GET    /v1/imports/pending             → drafts awaiting review
-POST   /v1/imports/photo               → multipart, 1-3 images, max 8MB each, JPEG/PNG/HEIC
-                                         cookbook OCR path; page photos deleted after parsing
 ```
+
+`POST /v1/imports/photo` (cookbook OCR) is deferred to v2 along with the rest of that feature — see the
+update to ADR-014 in `09-decisions-adr.md`.
 
 `POST /v1/imports` returns `202` immediately with the import id and initial status. It does **not**
 block for 30 seconds — the client opens the SSE stream. Even though D10 keeps the import in the

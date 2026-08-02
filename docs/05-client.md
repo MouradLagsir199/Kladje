@@ -35,7 +35,7 @@ app/                          # Expo Router
     planner/index.tsx         # week + boodschappen subtabs
     profiel/index.tsx         # groups, settings, subscription
   import/                     # modal stack over everything
-    index.tsx                 # source picker / paste / cookbook photo
+    index.tsx                 # source picker / paste
     [id]/progress.tsx
     [id]/review.tsx
     [id]/done.tsx

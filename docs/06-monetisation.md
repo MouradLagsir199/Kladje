@@ -95,7 +95,6 @@ allowance resets exactly when they're charged. Anything else generates support m
 | Any `failed` status | **No** | Never charge for your own failure |
 | `cancelled` by user during progress | **No** | Even though you may have partially paid |
 | Manual entry | **No** | Costs nothing, and you *want* this behaviour |
-| Photo/cookbook OCR | **Yes** | It's a paid model call |
 | Editing an existing recipe | **No** | |
 | *Laat AI aanvullen* on an existing import | **No** | Second call on an already-counted import |
 

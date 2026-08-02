@@ -5,8 +5,8 @@ This is the product. Everything else in the app is a place to put the output.
 ## Design principles
 
 1. **Cheapest path first.** Blogs and Pinterest have structured recipe data sitting in the HTML. Read
-   it. Don't send it to a scraper, barely touch a model. There is **no OCR anywhere in the link-import
-   path** — vision is used only for the cookbook-photo import, which is a separate entry point.
+   it. Don't send it to a scraper, barely touch a model. There is **no OCR or vision anywhere in v1** —
+   see the update to ADR-014; cookbook-photo import is deferred to v2 on cost grounds.
 2. **Never fabricate silently.** Anything the model invents gets `estimated` provenance and shows the
    user a yellow dot. A wrong oven temperature presented as fact is worse than a red "ontbreekt".
 3. **Cache before you spend.** Check `source_cache` before any paid call.
@@ -65,7 +65,6 @@ Store both `source_url` (what the user gave you, for the "bekijk origineel" link
 | YouTube | Captions track + description | Low | High — long-form creators narrate everything |
 | TikTok | Apify → transcript + caption + metadata | Low | **Variable** — fails on silent videos |
 | Instagram Reels | Apify → transcript + caption + metadata | Low | Variable — fails on silent videos |
-| Photo of cookbook | Vision OCR — **the only place vision is used** | Low | Good on flat pages, poor on curved spines |
 
 **Build order: blog first, then YouTube, then TikTok.** Blog import is a day's work and gives you a
 functioning product to test the whole review-and-save flow against. TikTok is a week and it's where
@@ -100,7 +99,7 @@ Apify returns the **transcript plus metadata** — caption, author, thumbnail, m
 transcription yourself. This removes an entire pipeline stage, a dependency on ffmpeg for audio, and
 roughly a third of the per-import cost.
 
-**No frame OCR.** Vision is reserved for the cookbook-photo entry point. Everything the pipeline knows
+**No frame OCR.** v1 uses no vision anywhere (see the update to ADR-014). Everything the pipeline knows
 about a video comes from Apify's transcript, the caption, and the metadata. This eliminates the media
 download, ffmpeg, frame sampling, size limits and download timeouts — the API container never touches a
 video file. It's a large reduction in moving parts.
@@ -126,21 +125,12 @@ Apify's thumbnail as the default, plus pick-from-gallery, plus take-a-photo-afte
 the real need — most users keep the thumbnail — and it keeps video files out of your infrastructure
 entirely. Reintroduce ffmpeg only if users actually complain about the thumbnail.
 
-### Cookbook photo — the only vision path
+### Cookbook photo — deferred to v2
 
-A separate entry point, not part of link import. User photographs a page; you send the image to a vision
-model and get back the same structured recipe schema. Notes:
-
-- Downscale to ~1,500px on the long edge before sending; cookbook type is larger than video overlay text
-  so you can afford less aggressive compression than you'd use on frames
-- Accept 1–3 images for recipes spanning a page turn, in one call
-- Provenance is uniformly `explicit` for what's legible and `missing` for what isn't — there is no
-  transcript to cross-reference, so don't let the model infer
-- Curved pages near the spine are the main failure mode. Prompt the user to flatten rather than trying
-  to correct it in software
-- Copyright: same rule as everywhere else, method text is rewritten. A cookbook is *more* clearly
-  protected expression than a blog post, so this matters more here, not less. Attribution has no URL to
-  point at, so capture book title and author as free text if the user supplies them
+Was planned as the one vision entry point (photograph a page, vision call, same review screen). Cut
+from v1 entirely on 2026-08-02 — every vision call is a paid OpenAI request, and there's no user base
+yet to justify spending on an entry point nobody is using. See the update to ADR-014 for the reasoning
+and the revisit condition. Nothing below this note describes v1 behaviour.
 
 ## Stage 2 — Evidence bundle
 
@@ -158,7 +148,6 @@ class EvidenceBundle:
     caption: str | None                    # post/video description
     structured: dict | None                # schema.org Recipe, if found
     transcript: list[TranscriptSegment]    # text + start_ms + end_ms
-    photo_text: str | None                 # cookbook OCR result, photo path only
     page_text: str | None                  # readable blog body
     thumbnail_url: str | None
 ```
@@ -282,7 +271,7 @@ draft. Make that rule explicit in code, not implied.
 ## Cost per import
 
 Prices verified 1 August 2026. **GPT-4.1 mini** for synthesis ($0,40 / $1,60 per 1M tokens) on every
-path. Apify at your measured €3,70 per 1000 videos. Vision only on the cookbook path.
+path. Apify at your measured €3,70 per 1000 videos. No vision calls in v1.
 
 Token profile of a synthesis call: ~1,400 tokens of system prompt and JSON schema (identical every
 time, so prompt-cached at 75% off), ~1,100 tokens of evidence, ~800 tokens of structured output.
@@ -292,7 +281,6 @@ time, so prompt-cached at 75% off), ~1,100 tokens of evidence, ~800 tokens of st
 | Blog / Pinterest | — | — | ~€0,0017 | **~€0,002** |
 | YouTube | ~€0,0037 | — | ~€0,0017 | **~€0,005** |
 | TikTok / Reels | ~€0,0037 | — | ~€0,0017 | **~€0,005** |
-| Cookbook photo | — | ~€0,002 | ~€0,0017 | **~€0,004** |
 | Cache hit, any link source | — | — | — | **€0** |
 
 **Blended: roughly €0,005 per import.** Note what dominates: output tokens, not input. The 800-token

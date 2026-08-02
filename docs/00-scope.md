@@ -13,7 +13,6 @@ those are table stakes. The review screen is where the product is won.
 ## In scope for v1
 
 - Import from TikTok, Instagram Reels, YouTube, Pinterest, food blogs, plus manual entry
-- **Cookbook photo import** — photograph a page, vision OCR, same review screen (the only use of vision)
 - iOS Share Extension and Android Intent Filter as the primary entry point
 - AI parsing into structured recipe: title, servings, times, ingredients, steps, meal type
 - English → Dutch translation of ingredient names, imperial/US → metric conversion
@@ -46,7 +45,8 @@ those are table stakes. The review screen is where the product is won.
 | Global public feed of all users' recipes | Moderation, spam and rights liability. Groups + curated only |
 | Shared group week planner | Deferred to v2; groups share recipes only in v1 |
 | Web app | Cannot be an iOS share target, and share-first is the core interaction |
-| Frame OCR on social posts | Vision is for cookbook photos only (which *is* in v1) |
+| Frame OCR on social posts | No vision anywhere in the link-import path. See ADR-014 |
+| **Cookbook photo import (vision OCR)** | **Deferred to v2** — a real feature, not cut, but a paid-vision cost the app doesn't need with zero users yet. Revisit once there's usage to justify it. See the update to ADR-014 |
 | Tap-an-ingredient-to-jump-to-the-source | Cut. Trust rests on provenance dots and the review screen |
 | "Kies frame uit video" photo picker | Needs ffmpeg; thumbnail + gallery covers it |
 | Review screen variants B (Triage) and C (Bron) | Variant A only — see D16 |
@@ -63,8 +63,8 @@ grams/ml/°C. Output is a structured row: `amount` + `unit` (fixed enum) + canon
 shelf category. This structure doubles as the Prakkie export contract.
 
 **D3 — The parsing model does translation, conversion and category tagging in one pass.** Apify supplies
-the transcript, so there is no transcription step. **No OCR in the link-import path at all** — vision is
-used only for the cookbook-photo entry point. No density
+the transcript, so there is no transcription step. **No OCR anywhere in v1** — see the update to ADR-014;
+cookbook-photo vision is deferred to v2. No density
 lookup table. Cups-to-grams is ingredient-dependent and the model is roughly right; every converted
 value therefore renders with the yellow *geschat* provenance dot.
 

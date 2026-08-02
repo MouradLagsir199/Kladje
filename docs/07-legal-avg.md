@@ -34,7 +34,7 @@ vendor's dashboard, so this is an afternoon, not a project.
 | Microsoft Azure | Everything | West Europe | Microsoft Products and Services DPA |
 | Clerk | Auth identifiers, email | Configure EU where the plan allows | Clerk DPA |
 | Apify | Source URLs | US | Apify DPA |
-| OpenAI | Transcripts, captions, cookbook photos, prompts | US by default — **see below** | OpenAI DPA + zero-retention |
+| OpenAI | Transcripts, captions, prompts | US by default — **see below** | OpenAI DPA + zero-retention |
 | RevenueCat | Purchase identifiers | US | RevenueCat DPA |
 | Sentry | Error payloads, device info | EU region available — **use it** | Sentry DPA |
 | Expo / EAS | Push tokens | US | Expo DPA |
@@ -95,11 +95,6 @@ blogger is protected expression.** So:
   the detail screen. This is what creators actually want, and non-negotiable in the UI
 - **Never re-host video.** Play the original in an embed or hand off to the platform's app. You store a
   single frame as a thumbnail, under fair-use-adjacent reasoning, and you honour takedowns
-- **Cookbook photos are the sharpest version of this.** A published cookbook's method text is more
-  clearly protected than a blog post's, professionally edited and commercially owned. The rewrite rule is
-  load-bearing on that path, and there's no source URL to attribute to — so capture book title and author
-  as free text and rely on the rewrite. Delete the uploaded page photographs after parsing; you have no
-  reason to retain them and not retaining them is the cleanest line in your privacy statement
 - **Ship a notice-and-takedown route** — an email address in the app and in your terms, and a documented
   process. Being responsive is most of your protection in practice
 

@@ -24,7 +24,7 @@ graph TB
     subgraph External
         CLERK[Clerk<br/>auth]
         APIFY[Apify<br/>social scraping]
-        OAI[OpenAI API<br/>synthesis + cookbook OCR]
+        OAI[OpenAI API<br/>synthesis]
         RC[RevenueCat<br/>subscriptions]
     end
 
@@ -78,7 +78,6 @@ New container `recipe-media` in the existing storage account for dev; a separate
 later. Contents:
 
 - Recipe photo: Apify thumbnail, or a gallery/camera image the user picked (JPEG, ~1200px)
-- Cookbook page photos submitted for OCR (delete after parsing — no reason to retain them)
 - User-uploaded cook-log photos
 - Group avatars
 
@@ -101,7 +100,7 @@ a config file or a repo.
 |---|---|---|---|
 | Clerk | Google/Apple sign-in, JWT issuance | Nobody can log in | Cached JWKS, long-lived refresh tokens, existing sessions survive a short outage |
 | Apify | TikTok/Instagram/YouTube **transcript** + metadata | Imports from those platforms fail | Per-platform circuit breaker; blogs and Pinterest use your own JSON-LD parser and keep working |
-| OpenAI | Recipe synthesis; vision for cookbook photos only | All imports fail | Retry with backoff; clean error state offering manual entry |
+| OpenAI | Recipe synthesis only — no vision, cookbook OCR is deferred to v2 | All imports fail | Retry with backoff; clean error state offering manual entry |
 | RevenueCat | Subscription state, receipt validation | Entitlements go stale | Cache entitlement in Postgres; grace period rather than instant lockout |
 
 **Blogs and Pinterest do not go through Apify.** Parsing `schema.org/Recipe` JSON-LD yourself is a

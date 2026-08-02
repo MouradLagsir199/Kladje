@@ -262,7 +262,7 @@ arrays. Do not construct a recipe from a food-adjacent post.
 ## Evidence quality
 
 You will receive some of: structured recipe data, a page text extract, a video
-transcript, a post caption, cookbook page text. Trust them in that order.
+transcript, a post caption. Trust them in that order.
 
 Transcripts are speech: they contain false starts, "een beetje", "zo'n", and
 approximations. Convert vague speech to concrete amounts ONLY when the speaker gives
@@ -294,9 +294,6 @@ Where `evidence_sections` includes only the parts that exist, each clearly label
 {text}
 
 --- CAPTION ---
-{text}
-
---- COOKBOOK PAGE TEXT ---
 {text}
 ```
 

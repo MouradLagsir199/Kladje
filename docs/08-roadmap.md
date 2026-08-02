@@ -52,7 +52,6 @@ planner polish will save it.
 - `silent_video` failure routed to prefilled manual entry with the thumbnail attached
 - Full failure taxonomy with distinct Dutch copy
 - *Laat AI aanvullen* as a separate call
-- **Cookbook photo import** — camera/gallery entry point, vision call, same review screen (v1, ~2 days)
 - Fixture corpus of 30–50 evidence bundles + the eval script
 - Cost telemetry per import, per stage, per platform
 
@@ -131,6 +130,8 @@ Ordered by how often people will ask:
 5. **iPad / tablet layout** — the planner genuinely wants a real grid
 6. **Curated content admin UI** — only once editing JSON in blob storage becomes annoying
 7. **Web app** — for SEO and sharing recipes to non-users
+8. **Cookbook photo import (vision OCR)** — cut from v1 on 2026-08-02, cost grounds, not a scope
+   judgement. See the update to ADR-014 in `09-decisions-adr.md`
 
 ## Cost model over time
 

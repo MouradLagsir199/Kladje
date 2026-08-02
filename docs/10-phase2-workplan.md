@@ -11,7 +11,7 @@ product and everything else is furniture.
 
 Hard gates. Don't move to Phase 3 until all four pass.
 
-1. **Fixture corpus of 45 sources** across blog, YouTube, TikTok, Reels and cookbook photos scores ≥ 80%
+1. **Fixture corpus of 40 sources** across blog, YouTube, TikTok and Reels scores ≥ 80%
    "needs no correction on ingredients" and ≥ 70% "needs no correction on steps"
 2. **Measured blended cost per import under €0,008.** Expected ~€0,005
 3. **p95 import duration under 25 seconds** on a real mobile connection
@@ -110,60 +110,21 @@ a failure path that's broken.
 
 The investment that makes every later prompt change safe.
 
-- 45 saved `EvidenceBundle` fixtures committed to the repo: ~15 blog, ~8 YouTube, ~12 TikTok, ~5 Reels,
-  ~5 cookbook photos, including deliberately awful ones — a silent video, a recipe in cups, a Reel that's
-  80% storytelling, a cookbook page shot at an angle with a shadow across it
+- 40 saved `EvidenceBundle` fixtures committed to the repo: ~15 blog, ~8 YouTube, ~12 TikTok, ~5 Reels,
+  including deliberately awful ones — a silent video, a recipe in cups, a Reel that's 80% storytelling
 - Golden outputs with **tolerant** assertions: flour between 110 and 140 g per cup, not exactly 125.
   Brittle assertions get switched off, and a test you've switched off is worse than no test
 - `scripts/eval.py` scoring a prompt version across the corpus: fields extracted, enum violations,
   provenance-honesty spot check, mean output tokens, estimated cost. One command, one table of numbers
 - **No paid API calls in CI.** Fixtures only
 
-### 2.8 — Cookbook photo import (2 days) — v1
+### 2.8 — Cookbook photo import — deferred to v2
 
-The only use of vision in the product. Small, because the expensive parts already exist: the review
-screen, the validation layer, the draft/save flow. You're adding an entry point and one model call.
-
-**Client (1 day)**
-- "Foto van kookboek" option in the import modal's step 1, alongside paste and manual entry
-- `expo-image-picker` for camera and gallery, 1–3 images to cover a page turn
-- Native permission strings: `NSCameraUsageDescription` and `NSPhotoLibraryUsageDescription` on iOS,
-  `CAMERA` and media permissions on Android. Write these in Dutch and make them specific — "om een
-  pagina uit je kookboek te fotograferen", not a generic string. Vague permission copy is a
-  rejection risk and it also visibly lowers grant rates
-- Client-side downscale to ~1,500px long edge before upload. Cookbook type is far larger than video
-  overlay text, so you can afford less compression than frames would need — but a 12MP original is
-  pointless bytes over a mobile connection
-- On-screen guidance before the shutter: flatten the page, avoid shadow, get all of the recipe in frame.
-  One line, not a tutorial
-- Progress screen reuses the existing SSE flow with two stages (`fetch` becomes `upload`)
-
-**Server (1 day)**
-- `POST /v1/imports/photo`, multipart, max 3 files, max 8MB each, JPEG/PNG/HEIC only
-- Upload to `recipe-media` under a temp prefix, run the vision call, then **delete the page photos**.
-  You have no reason to retain a photograph of someone's cookbook, and not retaining it is the simplest
-  possible answer in your privacy statement
-- Vision + synthesis in one call on GPT-4.1 mini, returning the same JSON schema as every other path
-- Provenance is `explicit` for legible text and `missing` for anything unclear. **There is no transcript
-  to cross-reference, so the model must not infer** — say so explicitly in the prompt. This path is
-  where over-claiming is most tempting and least detectable
-- No `source_url`. Capture book title and author as free-text fields on the review screen if the user
-  offers them, so attribution isn't simply absent
-- Counts against quota (it's a paid model call), `source_platform = 'photo_ocr'`
-- Cost: ~€0,004 per import, of which ~€0,002 is the image tokens
-
-**Failure modes worth their own copy**
-- `photo_unreadable` — blur, shadow, or a page too curved near the spine. Prompt a retake with the
-  specific problem named. Don't try to correct curvature in software
-- `no_recipe_found` — the photo is of something that isn't a recipe
-- Partial reads are the common case: a legible ingredient list with a method half-lost in the gutter.
-  That's a `low_confidence` draft, which the review screen already handles
-
-**One legal note that's stronger here than elsewhere.** A cookbook's method prose is more clearly
-protected expression than a blog post's — professionally edited, commercially published, and with a
-rights holder who has lawyers. The rewrite rule in the synthesis prompt isn't optional on this path, and
-there's no source URL to attribute to, which makes the rewrite your only protection rather than one of
-two. Worth raising with the lawyer reviewing your terms (`07-legal-avg.md`).
+Was planned here as the only use of vision in the product: a photo entry point reusing the existing
+review screen, validation layer, and draft/save flow. **Cut from v1 on 2026-08-02** — every vision call
+is a paid OpenAI request, and there's no user base yet to justify spending on an entry point nobody is
+using. See the update to ADR-014 in `09-decisions-adr.md`. Revisit once real usage data justifies the
+per-call cost; the design above is still sound whenever that happens.
 
 ### 2.9 — Cost and quality telemetry (1 day)
 
@@ -176,14 +137,9 @@ having it is a month's revenue overnight.
 
 ## Effort reality check
 
-Summing the items: ~18 working days against a 15-day, three-week window. Adding cookbook photo import
-pushed this phase over. Three honest options:
-
-1. **Let it be 3.5 weeks.** Recommended. This phase is the product; the planner can wait
-2. **Move cookbook photo to Phase 3**, where it sits comfortably alongside the library work and reuses
-   the same camera/permission plumbing the cook log needs anyway. It's still v1 either way
-3. **Trim the fixture corpus to 30.** Cheapest-looking cut and the one I'd resist — the corpus is what
-   makes every later prompt change safe
+Summing the items: ~16 working days against a 15-day, three-week window — comfortable now that
+cookbook photo import (was ~2 days, see 2.8) is deferred to v2. If it still runs over, the cheapest cut
+is **not** the fixture corpus — trim that last, it's what makes every later prompt change safe.
 
 Don't cut the failure-copy work (2.6) or the telemetry (2.9). Both look skippable and both cost you
 much more later.
@@ -200,7 +156,6 @@ Week 5  │ 2.3 TikTok / Reels ───────┤
         │ 2.5 Validation layer      │   continuously against the
         │                           │   growing corpus
 Week 6  │ 2.6 Failure copy ─────────┤
-        │ 2.8 Cookbook photo ───────┤
         │ 2.9 Telemetry ────────────┘
         │ Measure. Gate. Decide.
 ```

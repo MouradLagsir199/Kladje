@@ -71,7 +71,8 @@ a supermarket — for a small fraction of the effort.
 ## ADR-005 — OpenAI direct, behind a provider interface
 
 **Decision.** Use the OpenAI API with an API key, as specified. But put every model call behind a narrow
-internal interface (`transcribe`, `vision_ocr`, `synthesize`) so the provider is a config switch.
+internal interface (`transcribe`, `synthesize`) so the provider is a config switch. No `vision_ocr`
+method for now — cookbook-photo OCR is deferred to v2, see the update to ADR-014.
 
 **Reasoning.** You asked for OpenAI direct and it has the best model availability and the simplest
 integration. But the original spec's own AVG section correctly notes that sending user-submitted content
@@ -198,9 +199,10 @@ mandatory, not a choice.
 
 ## ADR-011 — GPT-4.1 mini for synthesis, pinned in config
 
-**Decision.** Synthesis on **GPT-4.1 mini** ($0,40 / $1,60 per 1M tokens) on every path, including
-cookbook-photo vision. No transcription model — Apify supplies transcripts. Pin the model name and
-`prompt_version` in config, record both in `source_cache`, alert on cost drift.
+**Decision.** Synthesis on **GPT-4.1 mini** ($0,40 / $1,60 per 1M tokens) on every path. No transcription
+model — Apify supplies transcripts. No vision calls in v1 — cookbook-photo OCR is deferred, see the
+update to ADR-014. Pin the model name and `prompt_version` in config, record both in `source_cache`,
+alert on cost drift.
 
 **Reasoning.** Verified pricing as of 1 August 2026. The current lineup is GPT-5.5 as flagship with the
 GPT-5.4 family below it; GPT-5.4 mini is $0,75 / $4,50 and GPT-5.4 nano $0,20 / $1,25. GPT-4.1 mini is
@@ -280,3 +282,12 @@ yielded and the thumbnail already attached as the photo. That turns a dead end i
 **Revisit.** If telemetry shows silent-video failures are a large share of TikTok attempts. The pipeline
 has a single seam where a rescue OCR pass would slot in after a thin synthesis result, so this decision is
 cheap to reverse — deliberately so.
+
+**Update, 2026-08-02 — cookbook-photo OCR deferred to v2 entirely.** The original decision above kept one
+exception: vision for the cookbook-photo entry point. That exception is now cut too, on cost grounds —
+every vision call is a paid OpenAI request, and there is no user base yet to justify spending on an entry
+point nobody is using. v1 now has **no vision, no OCR, anywhere**. Tasks 2.12 (`POST /v1/imports/photo`)
+and 2.13 (client "Foto van kookboek" entry) are removed from `13-build-tasks.md`; the fixture corpus in
+2.9 drops its 5 cookbook fixtures. The `photo_ocr` value stays in the `source_platform` enum
+(`02-datamodel.md`) — enum values are append-only forever, and leaving an unused value costs nothing.
+**Revisit** once there's real usage data suggesting the demand justifies the per-call cost.

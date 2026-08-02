@@ -57,7 +57,8 @@ Violating any of these is a bug even if the code works.
 6. **No browser storage APIs in the client** — no localStorage/sessionStorage. Use MMKV
 7. **Quota is enforced server-side**, checked before any paid API call
 8. **No supermarket data, prices, or product matching anywhere.** That's Prakkie. See ADR-001
-9. **No OCR in the link-import path.** Vision is only for cookbook photos. See ADR-014
+9. **No OCR or vision anywhere in v1.** Cookbook-photo import is deferred to v2 — a real cost driver
+   with no user base yet to justify it. See the 2026-08-02 update to ADR-014
 10. **Model name and prompt version are pinned in config**, never hardcoded at a call site, never
     silently changed. See ADR-011
 11. **Match the prototype.** Before building any screen, open `docs/prototype/Receptenapp.dc.html` and

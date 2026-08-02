@@ -13,7 +13,7 @@ shopping list, and sharing in small groups.
 | [00-scope.md](00-scope.md) | What the app is, what it explicitly is not, decision log from the design interview |
 | [01-architecture.md](01-architecture.md) | System architecture, Azure resources, environments, deployment |
 | [02-datamodel.md](02-datamodel.md) | Postgres schema, enums, migrations, indexing |
-| [03-import-pipeline.md](03-import-pipeline.md) | The core feature: fetch → transcribe → OCR → synthesise → review |
+| [03-import-pipeline.md](03-import-pipeline.md) | The core feature: fetch → transcribe → synthesise → review |
 | [04-api.md](04-api.md) | REST surface, SSE progress stream, auth, error contract |
 | [05-client.md](05-client.md) | Expo app structure, navigation, share extension, caching, screen inventory |
 | [06-monetisation.md](06-monetisation.md) | Free/paid tiers, quota accounting, RevenueCat, store rules, unit economics |
@@ -55,8 +55,9 @@ Three decisions were still open when this plan was written. I made them and docu
 in `09-decisions-adr.md` — ADR-006 (auth provider), ADR-007 (API language), ADR-008 (compute runtime).
 Override any of them; the rest of the plan holds either way.
 
-No open questions remain. Cookbook-photo OCR was the last one and is now **in v1**, built at the end of
-Phase 2 — see `10-phase2-workplan.md` §2.9.
+No open questions remain. Cookbook-photo OCR was the last one and was briefly in v1, but is now
+**deferred to v2** — vision calls are a cost driver the app doesn't need yet with zero users. See the
+update to ADR-014 in `09-decisions-adr.md`. v1 now uses vision nowhere at all.
 
 ## Docs are in English, product is in Dutch
 

@@ -75,11 +75,11 @@ Legend: **[P]** parallelisable with the previous task · **[B]** blocks a lot do
 | 2.6 | TikTok/Reels path: transcript + caption + metadata. Thumbnail copied into blob if the URL expires | 12 fixtures parse; thumbnail persisted | `pytest tests/test_tiktok.py` |
 | 2.7 | `silent_video` detection → prefilled manual entry with thumbnail + caption remnants | Silent fixture routes to manual entry, not an error screen | `pytest tests/test_silent_video.py` |
 | 2.8 | Full failure taxonomy with distinct Dutch copy, written in one file in one sitting | Every code in the `docs/03` table has copy and an exit | `pytest tests/test_error_copy.py` |
-| 2.9 | **[B]** Fixture corpus: 45 EvidenceBundles (15 blog, 8 YT, 12 TikTok, 5 Reels, 5 cookbook) incl. deliberately awful ones | Committed, loadable | `pytest tests/test_corpus_loads.py` |
+| 2.9 | **[B]** Fixture corpus: 40 EvidenceBundles (15 blog, 8 YT, 12 TikTok, 5 Reels) incl. deliberately awful ones | Committed, loadable | `pytest tests/test_corpus_loads.py` |
 | 2.10 | `scripts/eval.py` with the 9 assertions in `docs/11-prompts.md`. Commit results alongside prompt | One command, one table; provenance-honesty ≥95% | `uv run python scripts/eval.py --prompt-version 1` |
 | 2.11 | Prompt hardening loop against the corpus. Bump `PROMPT_VERSION` per semantic change | No regression on provenance honesty or silent invention | `scripts/eval.py` diff vs previous |
-| 2.12 | Cookbook photo: `POST /v1/imports/photo` multipart (≤3 files, 8MB, JPEG/PNG/HEIC), vision call, **delete page photos after parsing** | Photo import produces a draft; blob temp prefix empty afterwards | `pytest tests/test_photo_import.py` |
-| 2.13 | 🔑 Client: "Foto van kookboek" entry, `expo-image-picker`, Dutch permission strings, client-side downscale to 1500px | Camera + gallery both work, permissions requested with specific copy | 📱 |
+| ~~2.12~~ | ~~Cookbook photo: `POST /v1/imports/photo` multipart, vision call~~ — **deferred to v2** (2026-08-02, cost — see ADR-014 update). No vision anywhere in v1 | — | — |
+| ~~2.13~~ | ~~🔑 Client: "Foto van kookboek" entry~~ — **deferred to v2** along with 2.12 | — | — |
 | 2.14 | Telemetry: one event per import (platform, cache hit, per-stage ms, tokens, cost, outcome, silent_video, enrich used) | Events visible in App Insights | Query App Insights |
 | 2.15 | 🔑 Daily-spend alert + 5xx / import-failure-rate / p95-duration alerts | Alerts fire on a forced test | Azure alert test |
 | 2.16 | **Gate:** corpus ≥80% ingredients / ≥70% steps clean, cost <€0,008, p95 <25s, every failure mode triggered once | **Phase 2 gate** | `scripts/eval.py` + telemetry |

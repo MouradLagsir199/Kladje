@@ -25,9 +25,11 @@ param deployerObjectId string
 @description('Real values land here once Clerk is set up (docs/12-manual-setup.md step 3) — until then, placeholders keep the app booting instead of crash-looping on missing required config.')
 @secure()
 param clerkSecretKey string = 'sk_test_placeholder'
-param clerkJwksUrl string = 'https://placeholder.clerk.accounts.dev/.well-known/jwks.json'
 @secure()
 param clerkWebhookSecret string = 'whsec_placeholder'
+
+@description('Clerk JWKS endpoint. NOT a secret — it is public and derivable from the publishable key that ships in the client bundle. Kept as a real value rather than a placeholder on purpose: a wrong URL here fails every token with an opaque 401, which is expensive to diagnose.')
+param clerkJwksUrl string = 'https://welcome-starling-18.clerk.accounts.dev/.well-known/jwks.json'
 
 var appServicePlanName = 'receptenapp-plan-${environmentName}'
 var appServiceName = 'receptenapp-api-${environmentName}'
@@ -204,9 +206,10 @@ resource databaseUrlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   ]
 }
 
-// Placeholder until Clerk is set up (docs/12-manual-setup.md step 3). Update
-// with `az keyvault secret set` afterwards — no redeploy needed, App Service
-// reads the Key Vault reference by name, not by value.
+// Placeholder until Clerk is set up (docs/12-manual-setup.md step 3). Update with
+// `az keyvault secret set` afterwards, then restart the App Service AND change the
+// app setting — App Service caches the *resolved* value of a Key Vault reference,
+// so updating the secret alone does not reach a running app.
 resource clerkSecretKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'clerk-secret-key'

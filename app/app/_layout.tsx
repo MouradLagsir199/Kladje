@@ -1,10 +1,31 @@
-import { Stack } from "expo-router";
+import { ClerkLoaded, ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
+import { tokenCache } from "@/lib/token-cache";
 import { useAppFonts } from "@/theme/fonts";
 
 SplashScreen.preventAutoHideAsync();
+
+function AuthGate() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!isSignedIn && !inAuthGroup) {
+      router.replace("/(auth)/sign-in");
+    } else if (isSignedIn && inAuthGroup) {
+      router.replace("/");
+    }
+  }, [isLoaded, isSignedIn, segments, router]);
+
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useAppFonts();
@@ -19,5 +40,11 @@ export default function RootLayout() {
     return null;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <ClerkProvider tokenCache={tokenCache}>
+      <ClerkLoaded>
+        <AuthGate />
+      </ClerkLoaded>
+    </ClerkProvider>
+  );
 }

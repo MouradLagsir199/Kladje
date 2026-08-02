@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
+    "@clerk/clerk-expo": "^2.19.31",
     "@expo-google-fonts/schibsted-grotesk": "^0.4.2",
     "expo": "~57.0.9",
     "expo-constants": "~57.0.8",
@@ -12,6 +13,7 @@
     "expo-image": "~57.0.1",
     "expo-linking": "~57.0.4",
     "expo-router": "~57.0.9",
+    "expo-secure-store": "~57.0.1",
     "expo-splash-screen": "~57.0.5",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.2",

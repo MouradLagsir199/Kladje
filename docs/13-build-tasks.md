@@ -55,31 +55,31 @@ own library.** Nothing in this phase is optional to that sentence.
 |---|---|---|---|
 | ~~M1~~ | ~~Apply migration 002~~ — **done 2026-08-03.** Verified upgrade → downgrade → upgrade on the scratch DB, then applied to `receptenapp_dev` | Round-trip clean; enums correctly survive the downgrade (they belong to 001) | `uv run alembic upgrade head && uv run alembic downgrade -1` |
 | M2 | Migration 003, **minimal**: `imports` + `import_events`. No `source_cache`, no quota index yet. Adds the deferred `recipes.import_id` FK | Upgrade + downgrade clean | `uv run alembic upgrade head` |
-| M3 | **[B]** `EvidenceBundle` — the one structure every source collapses into, per `docs/03-import-pipeline.md` | Round-trips through Pydantic | `pytest tests/test_evidence.py` |
-| M4 | Blog extractor: JSON-LD → microdata → WP Recipe Maker, in that order of trust | 6 saved Dutch/English blog HTML fixtures produce an EvidenceBundle | `pytest tests/test_jsonld.py` |
-| M5 | **[B]** Apify provider behind an interface: run actor, poll, fetch dataset, 45s ceiling. Pydantic validation at the boundary | Malformed response raises at the boundary, not three layers down | `pytest tests/test_apify_provider.py` (mocked) |
-| M6 | 🔑 Save one raw Apify payload each for TikTok, Reel, YouTube into `tests/fixtures/apify/`. **Do this before M7** — the normalisers are written against real shapes, never guessed ones | Three real payloads committed | Files exist |
-| M7 | Per-actor normalisers → EvidenceBundle (actor IDs in `docs/15-actors-apify.md`) | The three fixtures normalise correctly | `pytest tests/test_apify_normalise.py` |
+| ~~M3~~ | **[B]** ~~`EvidenceBundle`~~ — **done 2026-08-03.** — the one structure every source collapses into, per `docs/03-import-pipeline.md` | Round-trips through Pydantic | `pytest tests/test_evidence.py` |
+| ~~M4~~ | ~~Blog extractor~~ — **done 2026-08-03**, plus M4b: fetches a live URL. JSON-LD → microdata → WPRM → page text. JSON-LD → microdata → WP Recipe Maker, in that order of trust | 6 saved Dutch/English blog HTML fixtures produce an EvidenceBundle | `pytest tests/test_jsonld.py` |
+| ~~M5~~ | **[B]** ~~Apify provider~~ — **done 2026-08-03.** behind an interface: run actor, poll, fetch dataset, 45s ceiling. Pydantic validation at the boundary | Malformed response raises at the boundary, not three layers down | `pytest tests/test_apify_provider.py` (mocked) |
+| ~~M6~~ | 🔑 ~~Save one raw Apify payload~~ — **done 2026-08-03.** each for TikTok, Reel, YouTube into `tests/fixtures/apify/`. **Do this before M7** — the normalisers are written against real shapes, never guessed ones | Three real payloads committed | Files exist |
+| ~~M7~~ | ~~Per-actor normalisers~~ — **done 2026-08-03.** 6 of 8 real URLs produce evidence; the two allrecipes links are `source_blocked` by the publisher and stay that way, see docs/03. → EvidenceBundle (actor IDs in `docs/15-actors-apify.md`) | The three fixtures normalise correctly | `pytest tests/test_apify_normalise.py` |
 | M8 | **[B]** OpenAI provider behind an interface (ADR-005), structured output using the exact schema in `docs/11-prompts.md`. Model and `PROMPT_VERSION` pinned in config, never at a call site | Schema-valid output on a fixture; provider swappable | `pytest tests/test_openai_provider.py` (mocked) |
 | M9 | Synthesis prompt v1 from `docs/11-prompts.md` verbatim, including few-shot. **The default call never invents.** A converted value is `derived`, never `explicit`; anything not determinable is `missing` + null and surfaces as the yellow "ontbreekt" card. Inventing a value and calling it `explicit` is the one unforgivable bug | Prompt loaded from a versioned module, not inline | `pytest tests/test_prompt_version.py` |
 | M9b | *Laat AI aanvullen* as a **separate second call**, run only when the user asks. Fills only the missing fields, marks every one `estimated` | Default import spends nothing on guessing; user-consented guesses are attributable | `pytest tests/test_enrich.py` |
 | M10 | **[B]** Validation: enum enforcement (`unit`, `category` are never free text), clamps, fan-oven computation, sensible rounding, dedupe, min-viability | Rules in §2.5 of `docs/10-phase2-workplan.md` covered | `pytest tests/test_validation.py` |
 | M11 | Import service: normalise → route by platform → fetch → synthesise → validate → draft. Foreground, in-process, **no cache** | Draft lands in `imports.draft`, nothing in `recipes` yet | `pytest tests/test_import_service.py` |
 | M12 | `POST /v1/imports`, `GET /v1/imports/{id}`, `PATCH .../draft`, `POST .../save`. Save materialises recipe + ingredients + steps and maps `ingredient_pos` → UUIDs | Save produces a complete recipe owned by the caller | `pytest tests/test_import_save.py` |
-| M13 | `GET /v1/recipes`, `GET /v1/recipes/{id}` | Detail returns ingredients, steps, provenance, attribution | `pytest tests/test_recipes_api.py` |
-| M14 | **Server gate:** one script imports a real TikTok URL and a real blog URL end to end and prints the recipe | Both produce something you would cook | `uv run python scripts/try_import.py <url>` |
+| ~~M13~~ | ~~`GET /v1/recipes`, `GET /v1/recipes/{id}`~~ — **done 2026-08-03.** | Detail returns ingredients, steps, provenance, attribution | `pytest tests/test_recipes_api.py` |
+| M14 | **Server gate:** one script imports a real TikTok URL and a real blog URL end to end and prints the recipe. **Half done:** `scripts/try_import.py --sample` runs the user's real links and stops at the `EvidenceBundle`; it cannot print a recipe until M8–M10 exist | Both produce something you would cook | `uv run python scripts/try_import.py <url>` |
 
 ### M-B — Make it look like the prototype (client)
 
 | ID | Task | Acceptance | Verify |
 |---|---|---|---|
-| M15 | **[B]** Component library from the prototype: RecipeCard ×3, MetaBar, SourceBadge, ProvenanceDot (8px, never colour-alone), IngredientRow, StepCard, EmptyState | Rendered in a dev gallery screen, matching the prototype | Visual |
-| M16 | Tab shell + navigation matching the prototype's bottom bar | Tabs navigate, correct icons and Dutch labels | 📱 |
+| ~~M15~~ | **[B]** ~~Component library~~ — **done 2026-08-03.** No dev gallery screen; the real screens are the check. from the prototype: RecipeCard ×3, MetaBar, SourceBadge, ProvenanceDot (8px, never colour-alone), IngredientRow, StepCard, EmptyState | Rendered in a dev gallery screen, matching the prototype | Visual |
+| ~~M16~~ | ~~Tab shell + navigation~~ — **done 2026-08-03.** matching the prototype's bottom bar | Tabs navigate, correct icons and Dutch labels | 📱 |
 | M17 | Import flow: paste + clipboard detection, progress screen, review screen (variant A) | Every review edit PATCHes debounced | 📱 |
-| M18 | Library screen + recipe detail | Detail renders ingredients, steps, provenance dots, source attribution | 📱 |
+| ~~M18~~ | ~~Library screen + recipe detail~~ — **done 2026-08-03.** | Detail renders ingredients, steps, provenance dots, source attribution | 📱 |
 | M19 | Onboarding (household size, diet + allergens with explicit Article 9 consent) + profile screen | Allergy consent is separate from terms acceptance | 📱 |
 | M20 | Android share intent for text/URL, and the URL survives sign-in | Share from TikTok → app opens → recipe imports | 📱 |
-| M21 | Cook mode: dark, keep-awake, one step per page, timers as wall-clock end times | Timer survives backgrounding for 5 min | 📱 |
+| M21 | Cook mode — **mostly done 2026-08-03**: dark, keep-awake, one step per page, per-step ingredients. **Outstanding: the timer.** The chip shows a step's duration but starts nothing | Timer survives backgrounding for 5 min | 📱 |
 | M22 | **MVP GATE:** share a TikTok from TikTok on a fresh install, sign in, land on the recipe, cook from it | 📱 | Human |
 
 ---

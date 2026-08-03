@@ -11,6 +11,8 @@ stopped. Three things happen here that the model cannot do for itself:
 
 import decimal
 import uuid
+from dataclasses import dataclass
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,11 +45,56 @@ def fan_temperature(temperature_c: int | None) -> int | None:
     return max(temperature_c - FAN_OVEN_OFFSET_C, 0)
 
 
+@dataclass(frozen=True, slots=True)
+class RecipeSource:
+    """Just the attribution fields, lifted out of the evidence.
+
+    Separate from `EvidenceBundle` because a draft has to survive in `imports.draft` between the
+    import and the user pressing Opslaan, and carrying a 24 000-character page extract through that
+    round trip to reach five strings would be absurd.
+    """
+
+    platform: SourcePlatform
+    url: str | None
+    url_norm: str | None
+    author: str | None
+    title: str | None
+
+    @classmethod
+    def from_bundle(cls, bundle: EvidenceBundle) -> "RecipeSource":
+        return cls(
+            platform=bundle.platform,
+            url=bundle.url,
+            url_norm=bundle.url_norm,
+            author=bundle.author,
+            title=bundle.title,
+        )
+
+    @classmethod
+    def from_draft(cls, data: dict[str, Any]) -> "RecipeSource":
+        return cls(
+            platform=SourcePlatform(data.get("platform") or SourcePlatform.manual),
+            url=data.get("url"),
+            url_norm=data.get("url_norm"),
+            author=data.get("author"),
+            title=data.get("title"),
+        )
+
+    def as_draft(self) -> dict[str, Any]:
+        return {
+            "platform": str(self.platform),
+            "url": self.url,
+            "url_norm": self.url_norm,
+            "author": self.author,
+            "title": self.title,
+        }
+
+
 async def materialise(
     db: AsyncSession,
     user_id: uuid.UUID,
     result: SynthesisResult,
-    bundle: EvidenceBundle,
+    source: RecipeSource,
     *,
     import_id: uuid.UUID | None = None,
 ) -> Recipe:
@@ -64,18 +111,16 @@ async def materialise(
         prep_minutes=result.prep_minutes,
         cook_minutes=result.cook_minutes,
         difficulty=result.difficulty,
-        source_platform=bundle.platform or SourcePlatform.manual,
-        source_url=bundle.url,
-        source_url_norm=bundle.url_norm,
-        source_author=bundle.author,
-        source_title=bundle.title,
+        source_platform=source.platform,
+        source_url=source.url,
+        source_url_norm=source.url_norm,
+        source_author=source.author,
+        source_title=source.title,
+        # Migration 003 gave this a home. Without it the detail screen cannot tell a stated serving
+        # count from an inferred one, which is the distinction the whole provenance design exists
+        # to show.
+        field_provenance=result.field_provenance.model_dump(mode="json"),
     )
-    # `result.field_provenance` and `result.missing` are dropped here, because there is nowhere to
-    # put them: `provenance` exists on ingredients and steps but not on the recipe's own scalar
-    # fields. Two screens need it — the metadata dots on Receptdetail and the amber "ontbreekt"
-    # card on review (docs/14-design-tokens.md) — so `recipes` needs a `field_provenance` JSONB
-    # column before either can be built. Dropping it silently would make servings look stated when
-    # it was inferred, which is the one failure this app cannot afford.
     db.add(recipe)
     await db.flush()
 

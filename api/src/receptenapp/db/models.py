@@ -2,6 +2,7 @@ import decimal
 import enum
 import uuid
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import (
     ARRAY,
@@ -18,7 +19,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from receptenapp.db.base import Base
@@ -93,6 +94,18 @@ class Difficulty(enum.StrEnum):
     makkelijk = "makkelijk"
     gemiddeld = "gemiddeld"
     uitdagend = "uitdagend"
+
+
+class ImportStatus(enum.StrEnum):
+    """The lifecycle of one import. The type already exists — migration 001 created it."""
+
+    queued = "queued"
+    fetching = "fetching"
+    synthesizing = "synthesizing"
+    ready_for_review = "ready_for_review"
+    saved = "saved"
+    failed = "failed"
+    cancelled = "cancelled"
 
 
 class User(Base):
@@ -186,8 +199,9 @@ class Recipe(Base):
     origin_recipe_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("recipes.id", ondelete="SET NULL")
     )
-    # FK constraint arrives with the imports table in migration 003.
-    import_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    import_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("imports.id", ondelete="SET NULL")
+    )
 
     title: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
@@ -209,6 +223,15 @@ class Recipe(Base):
     source_url_norm: Mapped[str | None] = mapped_column(Text)
     source_author: Mapped[str | None] = mapped_column(Text)
     source_title: Mapped[str | None] = mapped_column(Text)
+
+    # Provenance for the recipe's own scalar fields — title, servings, prep/cook minutes, oven_c,
+    # difficulty — as `{field: provenance}`. JSONB rather than six enum columns because the set of
+    # fields tracked this way follows the prompt's schema, and that changes with a prompt version
+    # while a column set changes with a migration.
+    #
+    # Without this the detail screen cannot tell a stated serving count from an inferred one, which
+    # is the difference the whole provenance design exists to show.
+    field_provenance: Mapped[dict[str, str] | None] = mapped_column(JSONB)
 
     notes: Mapped[str | None] = mapped_column(Text)
     is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
@@ -298,6 +321,87 @@ class RecipeStep(Base):
         SAEnum(Provenance, name="provenance"), nullable=False, server_default=text("'explicit'")
     )
     created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+
+
+class Import(Base):
+    """One attempt to turn a URL into a recipe.
+
+    A row exists from the moment the user pastes a link, including when the import fails — the
+    failure is the interesting part, and a client that has to distinguish "still working" from
+    "never started" needs something to poll.
+    """
+
+    __tablename__ = "imports"
+    __table_args__ = (
+        Index("ix_imports_user_created", "user_id", text("created_at DESC")),
+        # Partial: the quota check reads only the rows that count, and there is no reason to index
+        # the ones that do not. This is the index every single import hits.
+        Index(
+            "ix_imports_user_quota",
+            "user_id",
+            "counted_against_quota",
+            "created_at",
+            postgresql_where=text("counted_against_quota"),
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    status: Mapped[ImportStatus] = mapped_column(
+        SAEnum(ImportStatus, name="import_status"), nullable=False, server_default=text("'queued'")
+    )
+    platform: Mapped[SourcePlatform] = mapped_column(
+        SAEnum(SourcePlatform, name="source_platform"), nullable=False
+    )
+    source_url: Mapped[str | None] = mapped_column(Text)
+    source_url_norm: Mapped[str | None] = mapped_column(Text)
+
+    # The editable review payload. Deliberately JSONB and not rows in `recipes`: nothing reaches the
+    # library until the user presses Opslaan, so a half-corrected draft cannot show up in a search.
+    draft: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    recipe_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recipes.id", ondelete="SET NULL")
+    )
+
+    cache_hit: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
+    counted_against_quota: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
+    cost_eur_cents: Mapped[decimal.Decimal | None] = mapped_column(Numeric(8, 4))
+    duration_ms: Mapped[int | None] = mapped_column(Integer)
+    error_code: Mapped[str | None] = mapped_column(Text)
+    error_detail: Mapped[str | None] = mapped_column(Text)
+
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
+
+
+class ImportEvent(Base):
+    """One stage transition. This is what the progress screen renders.
+
+    `stage` and `state` are free text rather than enums on purpose: they are a telemetry log, and a
+    new stage should not need a migration to be recordable. Nothing branches on their values.
+    """
+
+    __tablename__ = "import_events"
+    __table_args__ = (Index("ix_import_events_import", "import_id", "id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    import_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("imports.id", ondelete="CASCADE"), nullable=False
+    )
+    stage: Mapped[str] = mapped_column(Text, nullable=False)
+    state: Mapped[str] = mapped_column(Text, nullable=False)
+    detail: Mapped[str | None] = mapped_column(Text)
+    at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
 

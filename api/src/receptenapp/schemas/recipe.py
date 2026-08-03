@@ -76,6 +76,9 @@ class RecipeDetail(RecipeSummary):
     source_title: str | None
     notes: str | None
     last_cooked_at: datetime | None
+    # Provenance for the recipe's own scalar fields, as `{field: provenance}`. Null on recipes
+    # written before migration 003 — those genuinely do not know, and `{}` would claim otherwise.
+    field_provenance: dict[str, str] | None = None
     ingredients: list[IngredientOut]
     steps: list[StepOut]
 

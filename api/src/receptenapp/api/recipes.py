@@ -30,13 +30,8 @@ async def list_recipes(
     return RecipeList(items=[RecipeSummary.model_validate(row) for row in rows])
 
 
-@router.get("/{recipe_id}")
-async def get_recipe(
-    recipe_id: uuid.UUID,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> RecipeDetail:
-    found = await recipes_service.get_recipe(db, user.id, recipe_id)
+def to_detail(found: recipes_service.RecipeWithChildren) -> RecipeDetail:
+    """Shared with the import save endpoint, which returns a finished recipe too."""
     return RecipeDetail(
         **RecipeSummary.model_validate(found.recipe).model_dump(),
         description=found.recipe.description,
@@ -45,6 +40,16 @@ async def get_recipe(
         source_title=found.recipe.source_title,
         notes=found.recipe.notes,
         last_cooked_at=found.recipe.last_cooked_at,
+        field_provenance=found.recipe.field_provenance,
         ingredients=[IngredientOut.model_validate(row) for row in found.ingredients],
         steps=[StepOut.model_validate(row) for row in found.steps],
     )
+
+
+@router.get("/{recipe_id}")
+async def get_recipe(
+    recipe_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> RecipeDetail:
+    return to_detail(await recipes_service.get_recipe(db, user.id, recipe_id))

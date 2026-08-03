@@ -1,5 +1,14 @@
-import type { IngredientOut, RecipeSummary } from "@/api/types";
+import type { IngredientOut, RecipeSummary, Unit } from "@/api/types";
 import { strings } from "@/strings/nl";
+
+/**
+ * Units that say nothing without a number.
+ *
+ * "ml groente olie" is not a line anyone would write, but a real TikTok import produced exactly
+ * that: the source never said how much oil, so `amount` is null while `unit` survived. The vague
+ * units are the opposite — "snuf zout" and "handvol rucola" read perfectly without a number.
+ */
+const MEASURES_NEEDING_AN_AMOUNT: Unit[] = ["g", "kg", "ml", "l", "el", "tl"];
 
 /** Dutch decimal comma, and no trailing zeroes — "1,5 el", not "1.50 el". */
 export function formatAmount(amount: number): string {
@@ -31,7 +40,11 @@ export function metaLine(recipe: RecipeSummary): string {
  * inventing a value.
  */
 export function ingredientLine(ingredient: IngredientOut, scale = 1): string {
-  const unit = ingredient.unit ? strings.unit[ingredient.unit] : "";
+  const unitIsMeaningless =
+    ingredient.amount === null &&
+    ingredient.unit !== null &&
+    MEASURES_NEEDING_AN_AMOUNT.includes(ingredient.unit);
+  const unit = ingredient.unit && !unitIsMeaningless ? strings.unit[ingredient.unit] : "";
 
   const quantity =
     ingredient.amount === null

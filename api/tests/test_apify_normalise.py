@@ -9,7 +9,6 @@ from typing import Any
 
 import pytest
 
-from receptenapp.core.config import Settings
 from receptenapp.core.errors import ImportErrorCode, ImportFailedError
 from receptenapp.db.models import SourcePlatform
 from receptenapp.providers.apify import StubActorRunner
@@ -18,6 +17,7 @@ from receptenapp.services.apify_normalise import (
     fetch_social_evidence,
     normalise,
 )
+from tests.support import make_settings
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures" / "apify"
 
@@ -38,23 +38,6 @@ def bundle_for(platform: SourcePlatform, name: str) -> Any:
     return normalise(
         platform, payload(name), url="https://in.test/x", url_norm="https://norm.test/x"
     )
-
-
-def make_settings(**overrides: Any) -> Settings:
-    """Settings with `.env` explicitly disabled.
-
-    Without `_env_file=None` these tests read the developer's real `api/.env`, so they would pass
-    or fail depending on which actor ids happen to be configured locally.
-    """
-    base: dict[str, Any] = {
-        "_env_file": None,
-        "database_url": "postgresql+asyncpg://x/y",
-        "clerk_secret_key": "k",
-        "clerk_jwks_url": "u",
-        "clerk_webhook_secret": "w",
-    }
-    base.update(overrides)
-    return Settings(**base)
 
 
 @pytest.mark.parametrize(("platform", "name"), PLATFORMS)

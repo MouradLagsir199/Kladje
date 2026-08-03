@@ -79,11 +79,89 @@ export const strings = {
 
   importFlow: {
     title: "Recept importeren",
+    cancel: "Annuleer",
     close: "Sluiten",
-    soon: {
-      title: "Importeren komt eraan",
-      body: "De importmotor werkt al: TikTok, Instagram, YouTube en blogs worden uitgelezen. Dit scherm wordt er nu omheen gebouwd.",
+
+    paste: {
+      clipboardTitle: (platform: string) => `We zagen een ${platform}-link op je klembord`,
+      clipboardGeneric: "We zagen een link op je klembord",
+      importIt: "Importeren",
+      orPaste: "Of plak een link",
+      supported: "TikTok · Instagram · YouTube · blog",
+      placeholder: "https://…",
+      start: "Importeren",
+      quota: (used: number, limit: number) => `${used} van je ${limit} imports deze maand`,
+      quotaGone: "Je imports van deze maand zijn op",
+      premium: "Premium",
     },
+
+    progress: {
+      title: "Recept lezen…",
+      // No promise of a duration: it depends on the platform and the length of the video.
+      body: "Dit duurt meestal een halve minuut. Je kunt dit scherm open laten staan.",
+      stages: {
+        fetch: "Bron ophalen",
+        synthesize: "Recept uitlezen",
+        validate: "Controleren",
+      },
+      retry: "Opnieuw proberen",
+    },
+
+    review: {
+      title: "Kloppen deze gegevens?",
+      missingOne: "Eén ding ontbreekt",
+      missingMany: (n: number) => `${n} dingen ontbreken`,
+      fieldLabels: {
+        servings: "Aantal personen",
+        oven_c: "Oventemperatuur",
+        prep_minutes: "Voorbereidingstijd",
+        cook_minutes: "Kooktijd",
+        difficulty: "Niveau",
+        title: "Titel",
+      } as Record<string, string>,
+      titleLabel: "Titel",
+      ingredients: "Ingrediënten",
+      steps: "Stappen",
+      estimated: "geschat",
+      rewritten:
+        "Stappen zijn in eigen woorden herschreven. De bron blijft altijd zichtbaar bij het recept.",
+      save: "Opslaan in bibliotheek",
+      saving: "Opslaan…",
+      qty: "Hoeveelheid",
+      unit: "Eenheid",
+      name: "Ingrediënt",
+    },
+
+    done: {
+      tag: "Opgeslagen",
+      body: "Je vindt dit recept nu in je bibliotheek.",
+      viewRecipe: "Bekijk recept",
+      importAnother: "Nog een importeren",
+    },
+
+    // One per code in the failure taxonomy — docs/03-import-pipeline.md. A generic message makes
+    // the app feel broken; each of these owes the user a different next step.
+    errors: {
+      unsupported_url: "Deze link kennen we niet. Werkt met TikTok, Instagram, YouTube en blogs.",
+      private_or_removed: "Dit bericht bestaat niet meer of is privé.",
+      source_blocked: "Deze site staat automatisch importeren niet toe.",
+      no_recipe_found: "We konden hier geen recept in vinden.",
+      low_confidence: "We konden hier geen volledig recept uit halen.",
+      no_transcript: "In deze video wordt niets gezegd dat we konden gebruiken.",
+      silent_video: "Hier staat te weinig in om een recept van te maken.",
+      scraper_failed: "We konden de bron nu niet ophalen.",
+      model_failed: "Het uitlezen ging mis. Probeer het nog eens.",
+      quota_exceeded: "Je hebt al je imports van deze maand gebruikt.",
+      media_too_large: "Deze bron is te groot om te verwerken.",
+      timeout: "Dit duurde te lang. Probeer het nog eens.",
+      conflict: "Dit recept staat al in je bibliotheek.",
+      unknown: "Er ging iets mis. Probeer het nog eens.",
+    } as Record<string, string>,
+
+    // Codes where trying again cannot possibly help, so no retry button is offered.
+    noRetry: ["unsupported_url", "source_blocked", "quota_exceeded", "conflict"],
+
+    seeRecipe: "Bekijk het recept",
   },
 
   library: {

@@ -17,10 +17,22 @@ const TABS: { name: string; label: string; Icon: IconComponent }[] = [
 ];
 
 type Props = {
-  /** Route name of the focused tab, e.g. "recepten". */
+  /** Route name of the focused tab as the navigator knows it, e.g. "recepten/index". */
   active: string;
-  onSelect: (name: string) => void;
+  onSelect: (tab: string) => void;
 };
+
+/**
+ * Whether a navigator route name belongs to a tab.
+ *
+ * Expo Router names a route after its path, so `app/(tabs)/recepten/index.tsx` is the route
+ * `recepten/index` — not `recepten`. Comparing against the bare name is silently always false,
+ * which costs you both navigation and the active state, so the prefix match lives in one place and
+ * both the layout and the bar use it.
+ */
+export function matchesTab(routeName: string, tab: string): boolean {
+  return routeName === tab || routeName.startsWith(`${tab}/`);
+}
 
 /**
  * Four tabs with the import button wedged in the middle.
@@ -38,7 +50,12 @@ export function TabBar({ active, onSelect }: Props) {
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, space.md) }]}>
       {TABS.slice(0, half).map((tab) => (
-        <TabButton key={tab.name} tab={tab} active={active === tab.name} onSelect={onSelect} />
+        <TabButton
+          key={tab.name}
+          tab={tab}
+          active={matchesTab(active, tab.name)}
+          onSelect={onSelect}
+        />
       ))}
 
       <Pressable
@@ -52,7 +69,12 @@ export function TabBar({ active, onSelect }: Props) {
       </Pressable>
 
       {TABS.slice(half).map((tab) => (
-        <TabButton key={tab.name} tab={tab} active={active === tab.name} onSelect={onSelect} />
+        <TabButton
+          key={tab.name}
+          tab={tab}
+          active={matchesTab(active, tab.name)}
+          onSelect={onSelect}
+        />
       ))}
     </View>
   );

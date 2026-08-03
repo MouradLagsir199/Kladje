@@ -265,8 +265,8 @@
       "receptenapp" — deliberately left alone, since renaming them buys nothing.
     </p>
     <div class="progress-row">
-      <div class="progress-track"><div class="progress-fill" style="width: 36%"></div></div>
-      <span class="progress-label">28 / 77 tasks</span>
+      <div class="progress-track"><div class="progress-fill" style="width: 43%"></div></div>
+      <span class="progress-label">33 / 77 tasks</span>
     </div>
   </header>
 
@@ -274,7 +274,8 @@
     <h2>Does it work yet?</h2>
     <p class="gate">
       The MVP gate is one sentence: share a TikTok from TikTok, and end up looking at a correct
-      Dutch recipe in your own library. Three of its four legs are real.
+      Dutch recipe in your own library. All four legs now work in the app. What is left is the
+      share sheet, so the link arrives without being pasted by hand.
     </p>
     <div class="legs">
       <div class="leg">
@@ -298,10 +299,17 @@
         </span>
         <span class="pill works">works</span>
       </div>
-      <div class="leg is-missing">
+      <div class="leg">
         <span class="num">04</span>
         <span class="what">Do it from inside the app
-          <span class="detail">The missing leg. There is no <code>POST /v1/imports</code> and no import screen, so recipes currently get in by running <code>scripts/try_import.py</code> from a terminal. This is M11, M12 and M17.</span>
+          <span class="detail">Paste a link — or tap the one Kladje spotted on your clipboard — and watch three real stages complete, correct anything wrong, then save. Nothing reaches the library until you press Opslaan.</span>
+        </span>
+        <span class="pill works">works</span>
+      </div>
+      <div class="leg is-missing">
+        <span class="num">05</span>
+        <span class="what">Share straight from TikTok
+          <span class="detail">The last step of the gate. Android has to accept a shared link and carry it through sign-in, which is M20. Until then the link gets pasted by hand.</span>
         </span>
         <span class="pill missing">missing</span>
       </div>
@@ -312,7 +320,8 @@
     <h2>Needs from you</h2>
     <p class="lead">Nothing is blocking me right now. These are the ones coming up, and one decision that is yours.</p>
     <ul class="ask-list">
-      <li><span class="tag">soon</span> <span><b>Your phone, for the MVP gate</b> (M22) — share a TikTok on a fresh install, sign in, land on the recipe, cook from it. Not reachable until the import screen exists.</span></li>
+      <li><span class="tag">now</span> <span><b>Try an import on your phone.</b> Copy a TikTok or blog link, open Kladje, tap the red button. The clipboard card should already be offering it. This is the first time the whole loop runs without a terminal, so it is the run most likely to surface something.</span></li>
+      <li><span class="tag">soon</span> <span><b>Your phone, for the MVP gate</b> (M22) — share a TikTok <i>from TikTok</i> on a fresh install. Waiting on the Android share intent (M20); until then the link is pasted by hand.</span></li>
       <li><span class="tag">decision</span> <span><b>Publishers that block automated access.</b> allrecipes answers with a Cloudflare 402 pointing at their licensing contact. I can get past it and chose not to — it is an access control a rightsholder set on purpose, and this app stores and re-displays content commercially. Those links get their own error and a route to manual entry, with no retry button. Say the word if you disagree; it is your product and your risk.</span></li>
       <li><span class="tag">heads-up</span> <span><b>A VPN takes the database offline.</b> The dev Postgres allows exactly one pinned IP, so a VPN makes every query hang and then fail with <code>WinError 121</code> — it looks like a code bug and is not one.</span></li>
       <li><span class="tag">heads-up</span> <span><b>Rebuild the dev client when native modules change.</b> Four were added today (svg, gradient, clipboard, keep-awake). <code>npx expo run:android --device CPH2791</code>.</span></li>
@@ -328,14 +337,14 @@
   <section class="phase">
     <div class="phase-head">
       <h2>Phase M — MVP: one recipe, end to end</h2>
-      <span class="phase-status active">In progress · 13/23</span>
+      <span class="phase-status active">In progress · 18/23</span>
     </div>
 
     <p class="subhead">M-A — Make a recipe exist (server)</p>
     <div class="card">
       <div class="tasks">
         <div class="task"><span class="dot done"></span><span class="id">M1</span><span class="desc is-done">Migration 002 applied — the database can store recipes</span><span class="verify done">alembic ✓</span></div>
-        <div class="task"><span class="dot upcoming"></span><span class="id">M2</span><span class="desc">Migration 003: <code>imports</code>, <code>import_events</code>, and the deferred <code>recipes.import_id</code> FK<span class="note">Grew a requirement today: also needs <code>recipes.field_provenance</code>. Synthesis returns per-field provenance and there is nowhere to store it, which blocks the metadata dots on Receptdetail and the amber card on review.</span></span><span class="verify upcoming">not started</span></div>
+        <div class="task"><span class="dot done"></span><span class="id">M2</span><span class="desc is-done">Migration 003 — <code>imports</code>, <code>import_events</code>, and the provenance column<span class="note">Round-tripped down and back up against the real database, which is where hand-edited migrations break: the downgrade has to drop the recipes constraint before <code>imports</code> can go, and it keeps the column, because 002 owns that</span></span><span class="verify done">alembic ✓</span></div>
         <div class="task"><span class="dot done"></span><span class="id">M3</span><span class="desc is-done">EvidenceBundle — the one shape TikTok, Reels, YouTube and blogs all collapse into<span class="note">The seam that makes everything downstream testable without paying for anything</span></span><span class="verify done">pytest ✓</span></div>
         <div class="task"><span class="dot done"></span><span class="id">M4</span><span class="desc is-done">Blog extractor: JSON-LD → microdata → WP Recipe Maker → plain page text<span class="note">The text fallback exists because blog markup is not consistent; structural guessing was removed on your say-so</span></span><span class="verify done">pytest ✓</span></div>
         <div class="task"><span class="dot done"></span><span class="id">M5</span><span class="desc is-done">Apify provider behind an interface, validated at the boundary</span><span class="verify done">pytest ✓</span></div>
@@ -344,9 +353,9 @@
         <div class="task"><span class="dot done"></span><span class="id">M8</span><span class="desc is-done">OpenAI provider behind an interface; model and prompt version pinned in config<span class="note">Raw httpx to match the Apify provider, so no <code>openai</code> dependency to track</span></span><span class="verify done">pytest ✓</span></div>
         <div class="task"><span class="dot done"></span><span class="id">M9</span><span class="desc is-done">Synthesis prompt v1, verbatim from the plan, loaded by version<span class="note">An unknown version raises rather than falling back — silently using another prompt would attribute an import to one that never ran</span></span><span class="verify done">pytest ✓</span></div>
         <div class="task"><span class="dot upcoming"></span><span class="id">M9b</span><span class="desc"><i>Laat AI aanvullen</i> as a separate second call, only when asked<span class="note">Keeps the default import from ever spending money on a guess</span></span><span class="verify upcoming">not started</span></div>
-        <div class="task"><span class="dot upcoming"></span><span class="id">M10</span><span class="desc">Validation: clamps, rounding, dedupe, min-viability<span class="note">Two real gaps to close here, both found on a live TikTok: it returned <code>servings: 18</code> (counting tacos, not people) and an ingredient carrying a unit with no amount. Both passed the schema untouched.</span></span><span class="verify upcoming">not started</span></div>
-        <div class="task"><span class="dot upcoming"></span><span class="id">M11</span><span class="desc">Import service: route → fetch → synthesise → validate → draft<span class="note">Foreground and in-process, no queue. Draft-to-rows already exists in <code>services/materialise.py</code></span></span><span class="verify upcoming">not started</span></div>
-        <div class="task"><span class="dot upcoming"></span><span class="id">M12</span><span class="desc">The import endpoints, including save<span class="note">This is what leg 04 above is waiting on</span></span><span class="verify upcoming">not started</span></div>
+        <div class="task"><span class="dot done"></span><span class="id">M10</span><span class="desc is-done">Validation — clamps, rounding, dedupe, minimum viability<span class="note">Both gaps from the live TikTok are closed. The taco yield is dropped rather than clamped to 24, because clamping swaps one wrong number for another that looks deliberate. Duplicate ingredients merge, and the sum is marked <code>derived</code> — adding two stated amounts is a computation</span></span><span class="verify done">pytest ✓</span></div>
+        <div class="task"><span class="dot done"></span><span class="id">M11</span><span class="desc is-done">Import service — route, fetch, synthesise, validate, draft<span class="note">No queue and no worker (ADR-009). Quota is checked before the first paid call, and a failed import is not charged: it spent Apify credit and produced nothing usable</span></span><span class="verify done">pytest ✓</span></div>
+        <div class="task"><span class="dot done"></span><span class="id">M12</span><span class="desc is-done">The import endpoints, including save<span class="note">202 and polling rather than SSE, which is a Phase H upgrade that changes nothing on screen. Save is idempotent, so a double-tap cannot duplicate; a link you already have answers 409 before anything is spent</span></span><span class="verify done">pytest ✓</span></div>
         <div class="task"><span class="dot done"></span><span class="id">M13</span><span class="desc is-done">Library and recipe-detail endpoints<span class="note">Someone else's recipe answers 404, not 403 — a 403 would confirm the id exists</span></span><span class="verify done">pytest ✓</span></div>
         <div class="task"><span class="dot done"></span><span class="id">M14</span><span class="desc is-done"><b>Server gate:</b> a real TikTok and a real blog both print a recipe you would cook<span class="note">Passed 2026-08-03. A call costs well under a cent on gpt-4.1-mini</span></span><span class="verify done">🎯 passed</span></div>
       </div>
@@ -357,7 +366,7 @@
       <div class="tasks">
         <div class="task"><span class="dot done"></span><span class="id">M15</span><span class="desc is-done">Component library traced from the prototype<span class="note">Cards, meta bar, source badge, provenance dot, ingredient row, step card, empty state. Every value comes from the token file; four the prototype used but the tokens lacked were added there first</span></span><span class="verify done">on device ✓</span></div>
         <div class="task"><span class="dot done"></span><span class="id">M16</span><span class="desc is-done">Tab shell — four tabs with the import button wedged between them<span class="note">Not a fifth tab and no active state: it opens a modal over whatever you were doing. Shipped with a real bug fixed — Expo Router names directory routes <code>recepten/index</code>, so taps did nothing until the match was corrected</span></span><span class="verify done">on device ✓</span></div>
-        <div class="task"><span class="dot upcoming"></span><span class="id">M17</span><span class="desc">Import flow: paste and clipboard detection, progress, review<span class="note">Currently a shell with honest placeholder copy rather than a fake progress bar</span></span><span class="verify upcoming">not started</span></div>
+        <div class="task"><span class="dot done"></span><span class="id">M17</span><span class="desc is-done">Import flow — clipboard, paste, progress, review, done<span class="note">Progress renders the server's own stage rows, so it cannot show cheerful movement while an import is hung. Each failure gets its own Dutch copy, and the ones retrying cannot fix get no retry button</span></span><span class="verify done">on device ✓</span></div>
         <div class="task"><span class="dot done"></span><span class="id">M18</span><span class="desc is-done">Bibliotheek and Receptdetail<span class="note">Detail always shows the source attribution and a provenance dot per ingredient — the two things this app is not allowed to drop</span></span><span class="verify done">on device ✓</span></div>
         <div class="task"><span class="dot upcoming"></span><span class="id">M19</span><span class="desc">Onboarding — household size, diet and allergens with explicit consent<span class="note">Profile screen exists; onboarding does not. Allergy consent has to be separate from accepting terms</span></span><span class="verify upcoming">not started</span></div>
         <div class="task"><span class="dot upcoming"></span><span class="id">M20</span><span class="desc">Android share intent, and the URL surviving sign-in</span><span class="verify upcoming">not started</span></div>
